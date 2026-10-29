@@ -73,6 +73,8 @@ export function createGallery(ctx) {
         t.node.style.visibility = o < 0.01 ? 'hidden' : 'visible'
       }
       label.style.opacity = (smoothRange(p, 0.2, 0.3) * (1 - exit)).toFixed(3)
+      // once it has gone the (empty) card stops catching taps meant for the work beneath
+      card.style.pointerEvents = exit > 0.5 ? 'none' : ''
       cardRect = null
     },
   }

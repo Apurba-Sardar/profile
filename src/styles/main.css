@@ -41,6 +41,11 @@ html.lenis,
 html.lenis body {
   height: auto;
 }
+/* the app keeps the visitor's place itself when the layout changes (turning a phone) */
+html,
+body {
+  overflow-anchor: none;
+}
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
@@ -397,6 +402,11 @@ main {
 .hud-brand .role {
   opacity: 0.55;
 }
+/* on phones the name builds up as the hero's letters land on it; the dot and the role follow */
+.hud-brand .dot,
+.hud-brand .role {
+  filter: opacity(var(--rest, 1));
+}
 .hud-right {
   justify-self: end;
   display: flex;
@@ -713,6 +723,10 @@ main {
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
+/* on phones the letters fly up into the bar, shrinking and spinning around their centres */
+.leap-title.is-dock .t-ch {
+  transform-origin: 50% 50%;
+}
 /* while the letters rise they come out from behind a line */
 .leap-title.is-revealing .t-word {
   clip-path: inset(-0.6em -0.5em -0.28em -0.5em);
@@ -960,6 +974,8 @@ main {
   position: relative;
   height: 175vh;
   --c: var(--gold);
+  /* cases overlap while they hand over, so only the record and the button take clicks */
+  pointer-events: none;
 }
 .case + .case {
   margin-top: -40vh;
@@ -972,6 +988,10 @@ main {
   overflow: hidden;
   /* the record's size; the title's hole and the year are placed from it */
   --disc: min(36vh, 64vw);
+}
+.case-disc,
+.case-cta {
+  pointer-events: auto;
 }
 .case-top {
   position: absolute;
@@ -1463,8 +1483,18 @@ main {
     align-items: center;
     gap: 0.04em;
   }
+  /* the work takes over in place from the index of work, and each case from the one before
+     (a case is pinned for a screen of scroll; work.js shows its content only while it is) */
+  .work {
+    margin-top: -100vh;
+    margin-top: -100svh;
+  }
+  .case {
+    height: 200vh;
+  }
   .case + .case {
-    margin-top: 0;
+    margin-top: -100vh;
+    margin-top: -100svh;
   }
   .case-pin {
     --disc: min(30vh, 60vw);
@@ -1473,11 +1503,18 @@ main {
   .case-title {
     top: calc(var(--mid) - var(--disc) / 2 - 2vh);
     transform: translateY(-100%);
+    display: flex;
+    justify-content: center;
     -webkit-mask-image: none;
     mask-image: none;
   }
+  /* the name once, centred (work.js fits its size to the screen) */
   .case-track {
-    font-size: 16vw;
+    font-size: 12vw;
+    font-stretch: 100%;
+  }
+  .case-track .rep {
+    display: none;
   }
   .case-disc {
     top: var(--mid);
@@ -1543,6 +1580,9 @@ main {
   }
   .case-top .kicker {
     display: none;
+  }
+  .case-top .count {
+    grid-column: 3;
   }
   .case-info {
     bottom: calc(108px + var(--safe-b));

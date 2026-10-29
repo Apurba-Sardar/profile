@@ -25,17 +25,19 @@ scrubbed by scroll and layered with motion typography in GSAP.
 
 The hero name rises letter by letter from behind a mask (a serif italic first name over a heavy grotesk surname),
 the surname swells like a wave on the variable font's width and weight axes (under the mouse, with the phone's tilt,
-or drifting on its own) and the whole name bursts apart in 3D as you scroll into the fall.
+or drifting on its own) and, as you scroll into the fall, the whole name bursts apart in 3D. On phones its letters
+take off one after another instead and fly up into the top bar, landing on the small name there letter by letter.
 
 Also included: smooth scrolling (Lenis), a `difference`-blend custom cursor, a full-screen chapter menu with previews,
 a soundtrack ("Let Him Cook" by XNIMXS, streamed once you turn the sound on; the surname, the beam and the meter
 in the bar pulse on its kick) layered with generative WebAudio sound (falling wind that follows your scroll speed,
 crowd murmur, impact boom that ducks the music, portal choir), a loader and `prefers-reduced-motion` support.
 
-On phones and tablets: portrait layouts (case titles above the records, cases that scroll in one after another),
-~44px touch areas on every control, safe-area insets for notches and the home indicator, floating words that stay
-on screen and step aside for captions, and services that light up as they cross the middle of the screen
-instead of on hover.
+On phones and tablets: portrait layouts (in Selected work each case takes over from the one before in place, its
+name fitted above the record, so nothing slides past the bars), ~44px touch areas on every control, safe-area insets
+for notches and the home indicator, floating words that stay on screen, step aside for captions and fade before
+the bars, services that light up as they cross the middle of the screen instead of on hover, and turning the phone
+keeps your place.
 
 ## Run it
 

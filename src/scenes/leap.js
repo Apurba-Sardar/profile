@@ -99,6 +99,9 @@ export function createLeap(ctx) {
   // sizes of the words (their rotated bounds) and of the caption text, measured on screen
   const capBox = caps.map(() => ({ x: 0, y: 0, w: 0, h: 0, o: 0 }))
   let sized = false
+  // phones and portrait screens: the bar is close to everything, so the words keep clear of it
+  let compact = false
+  let bars = { top: 0, bottom: 0 }
   const measure = () => {
     for (const w of words) {
       const a = ((w.rot || 0) * Math.PI) / 180
@@ -109,6 +112,8 @@ export function createLeap(ctx) {
     }
     caps.forEach((cap, i) => Object.assign(capBox[i], textSize(cap)))
     hero.measure(vw, vh)
+    compact = hero.docking
+    bars = ctx.hud.edges()
     sized = true
   }
 
@@ -134,26 +139,32 @@ export function createLeap(ctx) {
       hero.start(delay)
       gsap.to(cueIn, { v: 1, duration: 0.9, delay: delay + 2, ease: 'power2.out' })
     },
+    // phones: the hero's letters land on the bar's name one by one (null elsewhere)
+    dock: () => hero.dock(),
     update(p) {
       scene.p = p
+      if (!sized) measure()
       const mx = ctx.cursor.snx
       const my = ctx.cursor.sny
 
-      // hero name: rises in, then bursts apart as we fall past it (the letters move in heroName)
+      // hero name: rises in, then bursts apart as we fall past it, or on phones flies up into the
+      // bar (the letters move in heroName)
       const tp = smoothRange(p, 0, 0.075)
       const ti = expoOut(introT)
       const ty = (titleY * vh) / 100 - tp * vh * 0.22
-      // it turns slightly towards the mouse (or the way the phone tilts)
-      const turn = `perspective(1000px) rotateX(${(my * 5).toFixed(2)}deg) rotateY(${(mx * 7).toFixed(2)}deg)`
-      title.style.transform = `translate(-50%, -50%) translate3d(${(mx * -8).toFixed(1)}px, ${(ty + my * 6).toFixed(1)}px, 0) ${turn}`
+      // it turns slightly towards the mouse (or the way the phone tilts); letters on their way to
+      // the bar need a steady name to leave from, so there it settles as the scroll starts
+      const lean = hero.docking ? 1 - smoothRange(p, 0, 0.02) : 1
+      const ox = mx * -8 * lean
+      const oy = ty + my * 6 * lean
+      const turn = `perspective(1000px) rotateX(${(my * 5 * lean).toFixed(2)}deg) rotateY(${(mx * 7 * lean).toFixed(2)}deg)`
+      title.style.transform = `translate(-50%, -50%) translate3d(${ox.toFixed(1)}px, ${oy.toFixed(1)}px, 0) ${turn}`
       title.style.opacity = introT > 0 ? '1' : '0'
-      hero.update(p, vw, vh, ctx.reduced ? 0 : ctx.sound.kick)
+      hero.update(p, vw, vh, ctx.reduced ? 0 : ctx.sound.kick, { x: vw / 2 + ox, y: vh / 2 + oy })
       intro.style.opacity = clamp(ti * 1.2 - 0.2) * (1 - smoothRange(p, 0.0, 0.035))
       intro.style.transform = `translate3d(0, ${-p * vh * 1.6}px, 0)`
       // the scroll cue comes in once the name has landed and leaves with the first scroll
       cue.style.opacity = (cueIn.v * (1 - smoothRange(p, 0.003, 0.025))).toFixed(3)
-
-      if (!sized) measure()
 
       // captions (first, so the pills can keep clear of them)
       caps.forEach((cap, i) => {
@@ -185,6 +196,12 @@ export function createLeap(ctx) {
           const f = PERSPECTIVE / (PERSPECTIVE - w.z)
           x = keepInside(x * f, w.w * f, vw) / f
           if (w.k === 'pill') o *= clearOf(x * f, y * f, w.w * f, w.h * f, capBox)
+          // phones: they fade out before they reach the bar's rows instead of running under them
+          if (compact) {
+            const cy = vh / 2 + y * f
+            const hh = (w.h * f) / 2
+            o *= smoothRange(cy - hh, bars.top, bars.top + 36) * (1 - smoothRange(cy + hh, bars.bottom - 36, bars.bottom))
+          }
         }
         let tr = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${w.z}px)`
         if (w.rot) tr += ` rotate(${w.rot}deg)`

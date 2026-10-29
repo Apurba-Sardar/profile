@@ -22,18 +22,20 @@ export class Hud {
       el('a', { href: '#work', text: 'INDEX OF WORK' }),
     ])
 
-    this.node = el('header#hud', { 'aria-label': 'Site' }, [
-      el('div.hud-top', {}, [
-        this.menuBtn,
-        el('a.hud-brand.ui', { href: '#leap' }, [el('b', { text: b.name }), el('i.dot'), el('span.role', { text: b.role })]),
-        el('div.hud-right', {}, [this.soundBtn, this.talk]),
-      ]),
-      el('div.hud-bottom', {}, [
-        el('div.hud-section.ui', {}, [el('span.arrow', { text: '↳' }), this.sectionName]),
-        el('div.hud-progress', { 'aria-hidden': 'true' }, [this.progress]),
-        this.meta,
-      ]),
+    // the name, one span per character: on phones the hero's letters fly up and land on them
+    this.nameChars = [...b.name].map((ch) => el('span', { text: ch }))
+    this.brand = el('a.hud-brand.ui', { href: '#leap' }, [el('b', {}, this.nameChars), el('i.dot'), el('span.role', { text: b.role })])
+    this.top = el('div.hud-top', {}, [
+      this.menuBtn,
+      this.brand,
+      el('div.hud-right', {}, [this.soundBtn, this.talk]),
     ])
+    this.bottom = el('div.hud-bottom', {}, [
+      el('div.hud-section.ui', {}, [el('span.arrow', { text: '↳' }), this.sectionName]),
+      el('div.hud-progress', { 'aria-hidden': 'true' }, [this.progress]),
+      this.meta,
+    ])
+    this.node = el('header#hud', { 'aria-label': 'Site' }, [this.top, this.bottom])
     document.body.append(this.node)
 
     this.menuBtn.addEventListener('click', onMenu)
@@ -46,7 +48,7 @@ export class Hud {
       e.preventDefault()
       onIndex()
     })
-    this.node.querySelector('.hud-brand').addEventListener('click', (e) => {
+    this.brand.addEventListener('click', (e) => {
       e.preventDefault()
       onIndex(0)
     })
@@ -88,6 +90,31 @@ export class Hud {
     if (on === this.hero) return
     this.hero = on
     this.node.classList.toggle('at-hero', on)
+  }
+
+  // phones: how far each hero letter has landed on its character of the name (0..1); the dot and
+  // the role follow once the name is complete. null: the name is simply there.
+  setDock(v) {
+    if (!v) {
+      if (!this.docking) return
+      this.docking = false
+      for (const n of this.nameChars) n.style.opacity = n.__o = ''
+      this.brand.style.removeProperty('--rest')
+      this.rest = null
+      return
+    }
+    this.docking = true
+    this.nameChars.forEach((n, i) => {
+      const o = v[i].toFixed(2)
+      if (n.__o !== o) n.style.opacity = n.__o = o
+    })
+    const rest = Math.min(...v).toFixed(2)
+    if (this.rest !== rest) this.brand.style.setProperty('--rest', (this.rest = rest))
+  }
+
+  // where the bar's two rows end (px from the top), so things moving on screen can keep clear of them
+  edges() {
+    return { top: this.top.getBoundingClientRect().bottom, bottom: this.bottom.getBoundingClientRect().top }
   }
 
   // the four bars follow the music's bands while it plays (otherwise CSS animates them)

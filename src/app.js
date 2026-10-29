@@ -202,6 +202,9 @@ export class App {
 
   measureChapters() {
     const top = (node) => node.getBoundingClientRect().top + window.scrollY
+    // where every section sits, kept for a resize: by the time it is handled the layout may
+    // already have changed (turning a phone moves the work, see the CSS)
+    this.flowTops = [...this.main.children].map((node) => ({ node, top: top(node), height: node.offsetHeight }))
     const S = this.stage
     // chapter index per section, in scroll order
     this.chapters = [
@@ -219,7 +222,7 @@ export class App {
       leap: 0,
       noise: S.get('noise').docTop + window.innerHeight * 0.25,
       rise: S.get('rise').docTop + window.innerHeight * 0.3,
-      work: top(this.work.section),
+      work: top(this.work.section) + this.work.landing(),
       about: top(this.about.section),
       services: top(this.services.section),
       portal: S.get('portal').docTop,
@@ -231,15 +234,20 @@ export class App {
     let w = window.innerWidth
     let h = window.innerHeight
     let timer
+    // where the visitor was before the screen changed: by the resize event a browser may already
+    // have moved the page (phones keep what was on screen in view as they turn)
+    let from
     window.addEventListener('resize', () => {
+      from ??= this.anchor(this.lastScroll)
       clearTimeout(timer)
       timer = setTimeout(() => {
+        const anchor = from
+        from = undefined
         // ignore the mobile URL bar showing / hiding
         if (window.innerWidth === w && Math.abs(window.innerHeight - h) < 140 && isTouch()) return
         w = window.innerWidth
         h = window.innerHeight
         // keep the visitor at the same moment of the film: chapter heights scale with the viewport
-        const anchor = this.anchor()
         this.renderer.resize()
         this.stage.measure()
         this.clients.resize()
@@ -254,14 +262,11 @@ export class App {
     })
   }
 
-  /** The section under the current scroll position and how far into it we are. */
-  anchor() {
-    const y = window.scrollY
+  /** The section under scroll position y and how far into it that is (as last measured). */
+  anchor(y = window.scrollY) {
     let best = null
-    for (const node of this.main.children) {
-      const r = node.getBoundingClientRect()
-      const top = r.top + y
-      if (y >= top && y < top + r.height) best = { node, f: (y - top) / Math.max(1, r.height) }
+    for (const { node, top, height } of this.flowTops || []) {
+      if (y >= top && y < top + height) best = { node, f: (y - top) / Math.max(1, height) }
     }
     return best
   }
@@ -312,6 +317,7 @@ export class App {
   // ------------------------------------------------------------------ frame
   frame = (time, dt) => {
     const scroll = this.lenis ? this.lenis.animatedScroll : window.scrollY
+    this.lastScroll = scroll
     const vh = window.innerHeight
     this.cursor.tick()
     this.stage.update(scroll)
@@ -330,7 +336,11 @@ export class App {
     }
     const ls = this.leap.state
     this.hud.setAltitude(this.content.leap.startAltitude * (1 - Math.min(1, ls.p / 0.94)), ls.visible && ls.p < 0.999)
-    this.hud.setHero(ls.visible && ls.p < 0.04)
+    // the bar's name: on phones the hero's letters land on it one by one; elsewhere it steps aside
+    // while the big name is on screen
+    const dock = ls.visible ? this.leap.dock() : null
+    this.hud.setDock(dock)
+    this.hud.setHero(!dock && ls.visible && ls.p < 0.04)
     const v = this.lenis?.velocity || 0
     this.clients.tick(dt, v)
     this.sound.wind(v)
