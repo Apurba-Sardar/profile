@@ -47,11 +47,12 @@ Everything you read on the site lives in **`src/content.js`**:
 - `brand` — name, short wordmark, role, intro line, monogram.
 - `leap.words`, `noise.phrases`, `rise.side` — the words that fly past in each chapter.
 - `work.projects` — name, colour, ring text, description, stack and which film plays in the record
-  (`leap`, `ember`, `crowd`, `portal`).
+  (`leap`, `ember`, `crowd`, `portal`). Three of the four are labelled concepts; swap in your real projects
+  as you ship them.
 - `about`, `stack`, `services` — statement, marquee rows, services and their preview images.
 - `portal.cta` — the closing headline (`\n` = line break).
-- `contact` — **replace the placeholder email `hello@apurba.dev`**, your socials, your city and IANA timezone
-  for the live clock (e.g. `city: 'Kolkata'`, `timezone: 'Asia/Kolkata'`, `timezoneLabel: 'IST'`).
+- `contact` — email, socials, availability line, and your city + IANA timezone for the live clock
+  (`city: 'Kolkata'`, `timezone: 'Asia/Kolkata'`, `timezoneLabel: 'IST'`).
 
 Images used by the menu, the index tunnel and the services previews are in `public/media/`.
 Swap in your own screenshots (any aspect ratio, they are cropped with `object-fit: cover`) or re-render

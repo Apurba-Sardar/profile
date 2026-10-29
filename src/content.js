@@ -77,50 +77,50 @@ export const content = {
     projects: [
       {
         name: 'SOLACE',
-        client: 'SOLACE RECORDS',
+        client: 'CONCEPT',
         category: 'MUSIC STREAMING APP',
         year: 2026,
         color: '#e8b64c',
-        ring: 'SOLACE RECORDS — STREAMING APP, 2026 — 3 PLATFORMS, 1 CODEBASE — ',
+        ring: 'SOLACE — MUSIC STREAMING APP — 3 PLATFORMS, 1 CODEBASE — ',
         description:
-          'A music streaming app for an independent label. Offline-first, instant playback and one codebase for web, iOS and Android.',
-        meta: ['React Native, Next.js, Node.js', '120K monthly listeners'],
+          'A concept for an offline-first music streaming app: instant playback and one codebase for web, iOS and Android.',
+        meta: ['TypeScript, React', 'Concept'],
         scene: 'leap',
       },
       {
         name: 'EMBERFALL',
-        client: 'EMBERFALL',
+        client: 'CONCEPT',
         category: 'BROWSER GAME',
-        year: 2025,
+        year: 2026,
         color: '#ff6a1f',
-        ring: 'WEBGL GAME, 2025 — 1 ENGINE, 60 FPS — EMBERFALL — ',
+        ring: 'WEBGL GAME — 1 ENGINE, 60 FPS TARGET — EMBERFALL — ',
         description:
-          'A browser game about a city that catches fire one person at a time. A custom WebGL renderer that holds 60 fps on a five-year-old phone.',
-        meta: ['TypeScript, WebGL, GLSL', 'Playable in any browser'],
+          'A browser game concept about a city that catches fire one person at a time, rendered by a hand-written WebGL engine.',
+        meta: ['TypeScript, WebGL, GLSL', 'Concept'],
         scene: 'ember',
       },
       {
         name: 'THE CROWD',
-        client: 'LISBON DESIGN WEEK',
+        client: 'CONCEPT',
         category: 'REAL-TIME PLATFORM',
         year: 2025,
         color: '#ece5d8',
-        ring: 'REAL-TIME TICKETING, 2025 — 40K USERS, ZERO CRASHES — THE CROWD — ',
+        ring: 'REAL-TIME TICKETING — ONE QUEUE, THOUSANDS OF PEOPLE — THE CROWD — ',
         description:
-          'Ticketing for a design festival: forty thousand people in one queue in the same second, and nobody dropped.',
-        meta: ['Go, Redis, WebSockets, AWS', '40K concurrent users'],
+          'A ticketing concept for a design festival, designed so thousands of people can join one queue in the same second.',
+        meta: ['Python, WebSockets', 'Concept'],
         scene: 'crowd',
       },
       {
         name: 'THRESHOLD',
-        client: 'THRESHOLD STUDIO',
+        client: 'THIS WEBSITE',
         category: 'CREATIVE DEVELOPMENT',
-        year: 2024,
+        year: 2026,
         color: '#4c7dff',
-        ring: 'IMMERSIVE WEBSITE, 2024 — 1 DOOR, 6 MINUTES OF SCROLL — THRESHOLD — ',
+        ring: 'IMMERSIVE WEBSITE, 2026 — 3 REAL-TIME FILMS, 0 VIDEO FILES — THRESHOLD — ',
         description:
-          'A scroll-driven website for an architecture studio that designs entrances. Visitors spend an average of six minutes walking through one door.',
-        meta: ['Three.js, GSAP, WebGL', 'Site of the Day'],
+          'The site you are scrolling: real-time WebGL films, scroll-driven type and a generative soundtrack, without a single video file.',
+        meta: ['WebGL, GLSL, GSAP, Vite', 'Live'],
         scene: 'portal',
       },
     ],
@@ -128,32 +128,32 @@ export const content = {
 
   about: {
     statement:
-      'I build software for the second after the fall, when everything is noise and one idea refuses to stay down. Web apps, APIs and interactive experiences for teams that would rather ship than talk about shipping.',
+      'I build software for the second after the fall, when everything is noise and one idea refuses to stay down. Interfaces, web apps and interactive experiences for teams that would rather ship than talk about shipping.',
     notes: [
       'Every project, one rule: if it only works on my machine, it isn’t finished yet.',
-      'Working remotely with teams around the world. Open to freelance projects and full-time roles from January 2027.',
+      'Based in Kolkata, working with teams anywhere. Open to freelance projects and full-time roles.',
     ],
   },
 
   // The outline marquee: the stack I ship with.
   stack: [
-    ['TYPESCRIPT', 'REACT', 'NEXT.JS', 'NODE.JS'],
-    ['WEBGL', 'THREE.JS', 'GSAP', 'PYTHON'],
-    ['POSTGRES', 'DOCKER', 'AWS', 'GRAPHQL'],
+    ['TYPESCRIPT', 'JAVASCRIPT', 'PYTHON', 'HTML'],
+    ['CSS', 'WEBGL', 'GLSL', 'GSAP'],
+    ['VITE', 'NODE.JS', 'GIT', 'GITHUB'],
   ],
 
   services: {
     heading: 'What I can do for you',
     items: [
       {
-        title: 'WEB APPS',
-        text: 'Fast, accessible products from the first commit to production. React, Next.js and a lot of care.',
+        title: 'FRONT-END',
+        text: 'Fast, accessible interfaces from the first commit to production, written in TypeScript with a lot of care.',
         preview: 'media/code-tile.webp',
       },
       {
-        title: 'BACKEND & APIS',
-        text: 'Services that stay up when the crowd shows up. Clean APIs, solid data, boring deploys.',
-        preview: 'media/terminal-tile.webp',
+        title: 'WEB APPS',
+        text: 'Whole products, from the first screen to the deploy: routing, data, auth and the boring parts done right.',
+        preview: 'media/phone-tile.webp',
       },
       {
         title: 'CREATIVE CODING',
@@ -161,13 +161,13 @@ export const content = {
         preview: 'media/leap-burst.webp',
       },
       {
-        title: 'MOBILE APPS',
-        text: 'One codebase, every pocket. Cross-platform apps that still feel native.',
-        preview: 'media/phone-tile.webp',
+        title: 'AI & AUTOMATION',
+        text: 'LLM features and Python automations that do real work instead of demos.',
+        preview: 'media/terminal-tile.webp',
       },
       {
-        title: 'AI & AUTOMATION',
-        text: 'LLM features, agents and pipelines that do real work instead of demos.',
+        title: 'LANDING PAGES',
+        text: 'Launch pages that load fast and say one thing well, built and shipped in days.',
         preview: 'media/ember-burst.webp',
       },
     ],
@@ -186,17 +186,16 @@ export const content = {
   },
 
   contact: {
-    availability: 'Taking on four builds in 2027. Two slots are left.',
-    email: 'hello@apurba.dev', // ← put your real address here
-    city: 'Remote', // shown next to the live clock
-    timezone: 'UTC', // any IANA zone, e.g. 'Asia/Kolkata'
-    timezoneLabel: 'UTC',
+    availability: 'Open to freelance projects and full-time roles.',
+    email: 'sardarapurba9@gmail.com',
+    city: 'Kolkata', // shown next to the live clock
+    timezone: 'Asia/Kolkata', // any IANA zone
+    timezoneLabel: 'IST',
     response: 'Replies within a day',
     socials: [
-      { label: 'GitHub', href: 'https://github.com/apurba-sardar' },
-      { label: 'LinkedIn', href: 'https://www.linkedin.com/' },
-      { label: 'X', href: 'https://x.com/' },
-      { label: 'Instagram', href: 'https://instagram.com/' },
+      { label: 'GitHub', href: 'https://github.com/Apurba-Sardar' },
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/in/apurba-sardar-4789b3247/' },
+      { label: 'X', href: 'https://x.com/heyApurba' },
     ],
     again: 'FALL AGAIN',
   },
