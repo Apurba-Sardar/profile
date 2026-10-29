@@ -9,11 +9,11 @@
     <meta property="og:title" content="Apurba Sardar — Software Developer" />
     <meta property="og:description" content="Software developer with 4+ years of experience, IT Manager at The Minds Journal, building Webnestle and LootDost." />
     <meta property="og:type" content="website" />
-    <!-- social cards need absolute URLs: update these if the site moves to another domain -->
-    <meta property="og:url" content="https://apurba-sardar.github.io/Apu001/" />
-    <meta property="og:image" content="https://apurba-sardar.github.io/Apu001/media/og.jpg" />
+    <!-- social cards need absolute URLs: VITE_SITE_URL comes from .env, or from the deploy workflow -->
+    <meta property="og:url" content="%VITE_SITE_URL%" />
+    <meta property="og:image" content="%VITE_SITE_URL%media/og.jpg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="canonical" href="https://apurba-sardar.github.io/Apu001/" />
+    <link rel="canonical" href="%VITE_SITE_URL%" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   </head>
   <body class="is-loading">

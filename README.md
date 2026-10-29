@@ -1,6 +1,6 @@
 # Apurba Sardar — cinematic portfolio
 
-**Live:** https://apurba-sardar.github.io/Apu001/
+**Live:** https://apurba-sardar.github.io/profile/
 
 ![Preview](public/media/og.jpg)
 
@@ -48,7 +48,10 @@ npm run preview   # serve the production build
   `claude/portfolio-motion-graphics-4hs1k6` and publishes `dist/` to the `gh-pages` branch, which Pages serves
   (Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`), then waits until the live site serves the
   new build; the run fails if the site can't be reached. To redeploy by hand: Actions →
-  *Deploy to GitHub Pages* → *Run workflow*. Paths are relative, so the `/Apu001/` sub-path just works.
+  *Deploy to GitHub Pages* → *Run workflow*. The site lives at `https://apurba-sardar.github.io/<repository name>/`
+  (this repository is named `profile`). Paths are relative, so any sub-path works; the absolute links in
+  `index.html` (social cards, canonical) come from `VITE_SITE_URL`, which the workflow sets from the repository
+  name (`.env` holds the fallback).
 
 ## Make it yours
 

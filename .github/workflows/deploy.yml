@@ -1,5 +1,5 @@
 # Builds the site and publishes dist/ to the gh-pages branch, which GitHub Pages
-# serves at https://apurba-sardar.github.io/Apu001/
+# serves at https://apurba-sardar.github.io/<repository name>/
 # (Settings → Pages → Deploy from a branch → gh-pages, / (root)).
 name: Deploy to GitHub Pages
 
@@ -25,7 +25,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      # absolute links (social cards, canonical) point at wherever this repo's Pages site lives
+      - run: VITE_SITE_URL="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/" npm run build
       - name: Publish dist/ to gh-pages
         working-directory: dist
         env:
