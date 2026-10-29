@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Tiles</title>
+  <script type="module">
+    import '@fontsource-variable/archivo/wdth.css'
+    import '@fontsource/instrument-serif/400.css'
+    import '@fontsource/instrument-serif/400-italic.css'
+    import '@fontsource/jetbrains-mono/latin-400.css'
+    import { content } from '../src/content.js'
+    const b = content.brand
+    document.querySelectorAll('[data-mono]').forEach((n) => (n.textContent = b.monogram))
+    document.querySelectorAll('[data-name]').forEach((n) => (n.textContent = b.name))
+    document.querySelectorAll('[data-first]').forEach((n) => (n.textContent = b.wordmark.toLowerCase()))
+    document.fonts.ready.then(() => (window.__ready = true))
+  </script>
+  <style>
+    :root { --gold:#e8b64c; --orange:#ff6a2b; --blue:#4c7dff; --paper:#ece8df; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #000; display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; }
+    .tile { width: 800px; height: 1000px; position: relative; overflow: hidden; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .disp { font-family: 'Archivo Variable', sans-serif; font-stretch: 125%; font-weight: 800; text-transform: uppercase; }
+    /* code editor */
+    #code-tile { background: radial-gradient(120% 80% at 80% 0%, #2a1d0a 0%, #0c0d11 55%); color: #e9e6df; }
+    #code-tile .bar { height: 64px; display:flex; align-items:center; gap: 12px; padding: 0 28px; border-bottom: 1px solid #ffffff14; }
+    #code-tile .dot { width: 14px; height: 14px; border-radius: 50%; }
+    #code-tile .tab { margin-left: 20px; font-size: 20px; color: #ffffffaa; padding: 8px 16px; border-radius: 8px; background: #ffffff0f; }
+    #code-tile pre { font-size: 25px; line-height: 1.75; padding: 46px 40px; white-space: pre; }
+    .ln { color: #ffffff30; display: inline-block; width: 42px; }
+    .k { color: var(--orange); } .s { color: var(--gold); } .f { color: #7ea0ff; } .c { color: #6b6f78; font-style: italic; } .n { color: #f5d77a; }
+    #code-tile .glow { position:absolute; right:-120px; top:-160px; width: 520px; height: 520px; background: radial-gradient(circle, #e8b64c55, transparent 65%); }
+    #code-tile .caret { display:inline-block; width: 13px; height: 30px; background: var(--gold); vertical-align: -6px; }
+    /* terminal */
+    #terminal-tile { background: #07080a; color: #d9d6cf; }
+    #terminal-tile pre { font-size: 25px; line-height: 1.8; padding: 60px 44px; white-space: pre-wrap; }
+    #terminal-tile .p { color: var(--gold); } #terminal-tile .ok { color: #7bd88f; } #terminal-tile .dim { color: #ffffff55; }
+    #terminal-tile .scan { position:absolute; inset:0; background: repeating-linear-gradient(0deg, #ffffff06 0 2px, transparent 2px 5px); }
+    #terminal-tile .vig { position:absolute; inset:0; background: radial-gradient(120% 90% at 50% 40%, transparent 50%, #000c 100%); }
+    /* monogram */
+    #fr-tile { background: var(--blue); display:grid; place-items:center; }
+    #fr-tile .m { font-size: 300px; color: #0b0b0d; letter-spacing: -0.04em; }
+    #fr-tile .small { position:absolute; left: 40px; bottom: 36px; font-size: 22px; letter-spacing: .12em; color:#0b0b0dcc; }
+    #fr-tile .small2 { position:absolute; right: 40px; top: 36px; font-size: 22px; letter-spacing: .12em; color:#0b0b0dcc; }
+    /* solace mark */
+    #solace-mark { background: #0b0b0d; display:grid; place-items:center; }
+    /* phone */
+    #phone-tile { background: radial-gradient(90% 70% at 50% 30%, #3a2a10, #0b0b0d 70%); display:grid; place-items:center; }
+    .phone { width: 430px; height: 880px; border-radius: 62px; background: #0f0f12; border: 10px solid #1d1d22; box-shadow: 0 40px 120px #000, inset 0 0 0 2px #ffffff10; padding: 64px 34px 34px; position: relative; color: #ece8df; }
+    .phone .notch { position:absolute; top: 18px; left: 50%; transform: translateX(-50%); width: 120px; height: 30px; border-radius: 20px; background:#000; }
+    .art { width: 100%; aspect-ratio: 1; border-radius: 28px; background: radial-gradient(circle at 50% 60%, #fff7d6 0 4%, #f2c53d 9%, #e8892a 26%, #4a1f08 60%, #120a05 85%); position: relative; overflow: hidden; }
+    .art::after { content:''; position:absolute; left: 50%; top: 0; bottom: 0; width: 60px; transform: translateX(-50%) skewX(-8deg); background: linear-gradient(90deg, transparent, #fff3c4cc, transparent); }
+    .phone h4 { font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 40px; margin-top: 34px; }
+    .phone .who { font-family: 'Archivo Variable'; font-stretch: 112%; font-weight: 700; font-size: 15px; letter-spacing: .12em; color: #ffffff88; margin-top: 6px; }
+    .phone .track { height: 5px; border-radius: 4px; background: #ffffff22; margin-top: 40px; position: relative; }
+    .phone .track i { position:absolute; left:0; top:0; bottom:0; width: 62%; border-radius: 4px; background: var(--gold); }
+    .phone .times { display:flex; justify-content: space-between; font-family:'JetBrains Mono'; font-size: 14px; color:#ffffff66; margin-top: 10px; }
+    .phone .ctrl { display:flex; justify-content: center; align-items:center; gap: 54px; margin-top: 36px; }
+    .phone .play { width: 92px; height: 92px; border-radius: 50%; background: #ece8df; display:grid; place-items:center; }
+    .phone .play b { width: 0; height: 0; border-left: 30px solid #0b0b0d; border-top: 18px solid transparent; border-bottom: 18px solid transparent; margin-left: 8px; }
+    .phone .skip { width: 26px; height: 26px; border-left: 4px solid #ece8df; border-bottom: 4px solid #ece8df; transform: rotate(45deg); }
+    .phone .skip.r { transform: rotate(-135deg); }
+    /* commit graph */
+    #commit-tile { background: #0b0b0d; }
+  </style>
+</head>
+<body>
+  <div class="tile" id="code-tile">
+    <div class="glow"></div>
+    <div class="bar"><span class="dot" style="background:#ff6a2b"></span><span class="dot" style="background:#e8b64c"></span><span class="dot" style="background:#4c7dff"></span><span class="tab mono">fall.ts</span></div>
+<pre class="mono"><span class="ln">1</span><span class="k">import</span> { gravity } <span class="k">from</span> <span class="s">'./universe'</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="k">export async function</span> <span class="f">leap</span>(idea) {
+<span class="ln">4</span>  <span class="k">let</span> altitude = <span class="n">12_000</span>
+<span class="ln">5</span>  <span class="k">while</span> (altitude &gt; <span class="n">0</span>) {
+<span class="ln">6</span>    altitude -= gravity.<span class="f">pull</span>()
+<span class="ln">7</span>    idea.<span class="f">learn</span>()
+<span class="ln">8</span>  }
+<span class="ln">9</span>  <span class="c">// impact is just another event</span>
+<span class="ln">10</span>  <span class="k">await</span> idea.<span class="f">land</span>(<span class="s">'the noise'</span>)
+<span class="ln">11</span>
+<span class="ln">12</span>  <span class="k">return</span> idea.<span class="f">rise</span>({
+<span class="ln">13</span>    uptime: <span class="s">'100%'</span>,
+<span class="ln">14</span>    staysDown: <span class="k">false</span>,
+<span class="ln">15</span>  })
+<span class="ln">16</span>}
+<span class="ln">17</span>
+<span class="ln">18</span><span class="f">leap</span>(<span class="k">new</span> <span class="f">Idea</span>()) <span class="caret"></span></pre>
+  </div>
+
+  <div class="tile" id="terminal-tile">
+<pre class="mono"><span class="p">~/<span data-first>apurba</span> $</span> npm run build
+<span class="dim">vite v8 building for production…</span>
+<span class="ok">✓</span> 214 modules transformed
+<span class="ok">✓</span> built in 2.41s
+
+<span class="p">~/<span data-first>apurba</span> $</span> npm test
+<span class="ok">✓</span> 128 passed <span class="dim">(0 failed)</span>
+
+<span class="p">~/<span data-first>apurba</span> $</span> git commit -m "refuse to stay down"
+<span class="dim">[main 4f2a9c1] 6 files changed</span>
+
+<span class="p">~/<span data-first>apurba</span> $</span> git push origin main
+<span class="dim">→ deploying to production…</span>
+<span class="ok">✓</span> live in 41s · 0 errors
+
+<span class="p">~/<span data-first>apurba</span> $</span> █</pre>
+    <div class="scan"></div><div class="vig"></div>
+  </div>
+
+  <div class="tile" id="fr-tile"><div class="m disp" data-mono>A/S</div><div class="small disp" data-name></div><div class="small2 disp">EST. 2026</div></div>
+
+  <div class="tile" id="solace-mark">
+    <svg width="560" height="560" viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="sg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe9a8"/><stop offset=".35" stop-color="#ffb23e"/><stop offset=".75" stop-color="#ff6a2b"/><stop offset="1" stop-color="#c43a10"/></radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="96" fill="url(#sg)"/>
+      <g fill="none" stroke="#7a2306" stroke-opacity=".55">
+        <circle cx="100" cy="100" r="84" stroke-width="1"/><circle cx="100" cy="100" r="72" stroke-width="1.2"/><circle cx="100" cy="100" r="60" stroke-width="1.4"/><circle cx="100" cy="100" r="48" stroke-width="1.6"/><circle cx="100" cy="100" r="36" stroke-width="1.8"/>
+      </g>
+      <circle cx="100" cy="100" r="22" fill="#0b0b0d"/>
+      <circle cx="100" cy="100" r="4" fill="#ffd27a"/>
+    </svg>
+  </div>
+
+  <div class="tile" id="phone-tile">
+    <div class="phone"><span class="notch"></span>
+      <div class="art"></div>
+      <h4>Refuse to Stay Down</h4>
+      <div class="who">SOLACE RECORDS · OFFLINE</div>
+      <div class="track"><i></i></div>
+      <div class="times"><span>2:41</span><span>-1:38</span></div>
+      <div class="ctrl"><span class="skip"></span><span class="play"><b></b></span><span class="skip r"></span></div>
+    </div>
+  </div>
+
+  <div class="tile" id="commit-tile">
+    <svg width="800" height="1000" viewBox="0 0 800 1000" font-family="JetBrains Mono, monospace">
+      <g stroke-width="5" fill="none" stroke-linecap="round">
+        <path d="M200 60 V940" stroke="#e8b64c"/>
+        <path d="M200 220 C200 280 330 280 330 340 V560 C330 620 200 620 200 680" stroke="#4c7dff"/>
+        <path d="M200 420 C200 470 460 470 460 520 V600" stroke="#ff6a2b"/>
+        <path d="M460 600 C460 660 330 640 330 560" stroke="#ff6a2b" stroke-dasharray="1 0"/>
+      </g>
+      <g>
+        <circle cx="200" cy="120" r="14" fill="#e8b64c"/><circle cx="200" cy="220" r="14" fill="#e8b64c"/><circle cx="330" cy="340" r="14" fill="#4c7dff"/><circle cx="200" cy="420" r="14" fill="#e8b64c"/><circle cx="460" cy="520" r="14" fill="#ff6a2b"/><circle cx="330" cy="460" r="14" fill="#4c7dff"/><circle cx="460" cy="600" r="14" fill="#ff6a2b"/><circle cx="200" cy="680" r="18" fill="#0b0b0d" stroke="#e8b64c" stroke-width="5"/><circle cx="200" cy="800" r="14" fill="#e8b64c"/><circle cx="200" cy="900" r="14" fill="#e8b64c"/>
+      </g>
+      <g font-size="22" fill="#ece8df">
+        <text x="240" y="128">init: the leap</text><text x="240" y="228">feat: survive impact</text><text x="370" y="348" fill="#7ea0ff">fix: the noise</text><text x="240" y="428">feat: rise</text><text x="500" y="528" fill="#ff8a5a">perf: 60fps</text><text x="370" y="468" fill="#7ea0ff">refactor</text><text x="500" y="608" fill="#ff8a5a">test: 128 ✓</text><text x="240" y="688">merge: main</text><text x="240" y="808">ship: v1.0</text><text x="240" y="908" fill="#ffffff88">HEAD → main</text>
+      </g>
+    </svg>
+  </div>
+</body>
+</html>
