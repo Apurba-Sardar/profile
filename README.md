@@ -1,5 +1,7 @@
 # Apurba Sardar — cinematic portfolio
 
+**Live:** https://apurba-sardar.github.io/Apu001/
+
 ![Preview](public/media/og.jpg)
 
 A scroll-driven, cinematic portfolio told as one continuous fall:
@@ -37,8 +39,10 @@ npm run preview   # serve the production build
 `dist/` is plain static files with relative paths, so it deploys anywhere:
 
 - **Vercel / Netlify**: import the repo, build command `npm run build`, output directory `dist`.
-- **GitHub Pages**: build, then publish the contents of `dist/` (for example with the `peaceiris/actions-gh-pages` action
-  or by pushing `dist/` to a `gh-pages` branch). Paths are relative, so a `/<repo>/` sub-path works too.
+- **GitHub Pages** (already set up here): `.github/workflows/deploy.yml` builds the site on every push to `main` or
+  `claude/portfolio-motion-graphics-4hs1k6` and publishes `dist/` to the `gh-pages` branch, which Pages serves
+  (Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`). To redeploy by hand: Actions →
+  *Deploy to GitHub Pages* → *Run workflow*. Paths are relative, so the `/Apu001/` sub-path just works.
 
 ## Make it yours
 
