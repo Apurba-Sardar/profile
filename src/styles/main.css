@@ -1214,7 +1214,8 @@ main {
   font-stretch: 115%;
   font-weight: 800;
   letter-spacing: -0.03em;
-  font-size: clamp(36px, 8.2vw, 158px);
+  /* 8.2vw, or smaller when the address is too long for the column (~0.65em per character) */
+  font-size: clamp(18px, min(8.2vw, (100vw - 2 * var(--gutter)) / (var(--chars, 16) * 0.67)), 158px);
   line-height: 1;
   white-space: nowrap;
   background: linear-gradient(90deg, #d79f37 0%, #e3c33f 55%, #eaea56 100%);

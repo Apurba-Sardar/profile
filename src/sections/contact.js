@@ -7,7 +7,8 @@ export function createContact(ctx) {
   const time = el('time', { text: '--:--' })
   const again = el('button.pill.is-ghost.is-big.ui.contact-again', { type: 'button' }, [c.again + ' ', el('span', { text: '↑' })])
   again.addEventListener('click', () => ctx.go('leap'))
-  const email = el('a.contact-email', { href: `mailto:${c.email}`, text: c.email })
+  // --chars lets the CSS shrink a long address until it fits on one line
+  const email = el('a.contact-email', { href: `mailto:${c.email}`, text: c.email, style: { '--chars': c.email.length } })
   const section = el('section.contact#contact', { 'aria-label': 'Contact' }, [
     el('h2.sr-only', { text: 'Contact' }),
     el('p.contact-avail.serif', { text: c.availability }),
