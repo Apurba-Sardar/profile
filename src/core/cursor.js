@@ -1,4 +1,4 @@
-import { lerp, isTouch } from '../lib/util.js'
+import { lerp, clamp, isTouch, prefersReducedMotion } from '../lib/util.js'
 
 /**
  * Ring + dot cursor rendered with mix-blend-mode: difference. It inverts
@@ -17,7 +17,10 @@ export class Cursor {
     this.ny = 0
     this.snx = 0
     this.sny = 0
-    if (!this.enabled) return
+    if (!this.enabled) {
+      this.tilt()
+      return
+    }
 
     document.body.classList.add('has-cursor')
     this.node = document.getElementById('cursor')
@@ -45,6 +48,30 @@ export class Cursor {
       this.node.classList.toggle('is-view', !!view)
       this.node.classList.toggle('is-hover', !!hot && !view)
       this.label.textContent = view ? view.dataset.cursor : ''
+    })
+  }
+
+  /**
+   * Phones: tilting the device moves the scenes the way the mouse does on desktop.
+   * It never asks for permission: browsers that allow motion sensors by default (Android) send
+   * the events, and the ones that would need a prompt (iOS) simply don't.
+   */
+  tilt() {
+    if (prefersReducedMotion() || typeof DeviceOrientationEvent === 'undefined') return
+    let base = null
+    window.addEventListener('deviceorientation', (e) => {
+      if (e.beta == null || e.gamma == null) return
+      // the resting pose drifts towards however the phone is being held, so only movement counts
+      base ??= { b: e.beta, g: e.gamma }
+      base.b += (e.beta - base.b) * 0.01
+      base.g += (e.gamma - base.g) * 0.01
+      let x = e.gamma - base.g
+      let y = e.beta - base.b
+      const turn = screen.orientation?.angle ?? 0
+      if (turn === 90) [x, y] = [y, -x]
+      else if (turn === 270) [x, y] = [-y, x]
+      this.nx = clamp(x / 18, -1, 1)
+      this.ny = clamp(y / 18, -1, 1)
     })
   }
 

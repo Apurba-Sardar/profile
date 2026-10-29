@@ -170,6 +170,7 @@ export class App {
     const loader = document.getElementById('loader')
     document.body.classList.remove('is-loading')
     const intro = { v: 0 }
+    this.leap.dropIn(0.85)
     gsap
       .timeline()
       .to(loader.querySelector('.ld-inner'), { opacity: 0, y: -20, duration: 0.5, ease: 'power2.in' })
@@ -322,6 +323,7 @@ export class App {
     }
     const ls = this.leap.state
     this.hud.setAltitude(this.content.leap.startAltitude * (1 - Math.min(1, ls.p / 0.94)), ls.visible && ls.p < 0.999)
+    this.hud.setHero(ls.visible && ls.p < 0.04)
     const v = this.lenis?.velocity || 0
     this.clients.tick(dt, v)
     this.sound.wind(v)

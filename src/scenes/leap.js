@@ -1,3 +1,4 @@
+import gsap from 'gsap'
 import { el, lerp, range, smoothRange, window01, wrap, expoOut, clamp, keepInside, clearOf, textSize } from '../lib/util.js'
 
 // font-size (vw) so a word of this length fits inside maxW (vw)
@@ -39,8 +40,27 @@ export function createLeap(ctx) {
   ])
 
   // --- hero title + intro
-  const titleInner = el('span.t-inner.extrude', { text: c.brand.name })
-  const title = el('div.abs.display.leap-title', { style: { fontSize: `clamp(22px, ${fit(c.brand.name, 11.4, 74).toFixed(2)}vw, 220px)` } }, [titleInner])
+  // one span per letter so the name can fall into place; portrait screens stack one word per line
+  const nameWords = c.brand.name.split(' ')
+  const longest = nameWords.reduce((a, b) => (b.length > a.length ? b : a))
+  const titleInner = el(
+    'span.t-inner.extrude',
+    {},
+    nameWords.map((w) => el('span.t-word', {}, [...w].map((ch) => el('span.t-ch', { text: ch })))),
+  )
+  const letters = [...titleInner.querySelectorAll('.t-ch')]
+  const title = el(
+    'div.abs.display.leap-title',
+    {
+      'aria-hidden': 'true',
+      style: {
+        '--fs-line': `clamp(22px, ${fit(c.brand.name, 11.4, 74).toFixed(2)}vw, 220px)`,
+        // narrower than the screen: the 3D turn makes the right-hand letters bigger
+        '--fs-stack': `clamp(40px, ${fit(longest, 24, 72).toFixed(2)}vw, 260px)`,
+      },
+    },
+    [titleInner],
+  )
   const intro = el('p.leap-intro.serif', { html: c.brand.intro })
   const heroLayer = el('div.layer', {}, [intro, title])
 
@@ -68,9 +88,11 @@ export function createLeap(ctx) {
   })
   const fieldLayer = el('div.layer', {}, [field])
 
-  // --- captions (difference blend: blue over gold, white over shadow)
+  // --- captions (difference blend: blue over gold, white over shadow), and the scroll cue,
+  // which needs the same blend to read on the bright beam
   const caps = c.leap.captions.map((t) => el('p.cap', { text: t, 'aria-hidden': 'true' }))
-  const capLayer = el('div.layer.is-diff', {}, caps)
+  const cue = el('div.leap-cue.ui', { 'aria-hidden': 'true' }, [el('span', { text: 'SCROLL TO FALL' }), el('i')])
+  const capLayer = el('div.layer.is-diff', {}, [...caps, cue])
   const CAPW = [
     [0.05, 0.3],
     [0.27, 0.52],
@@ -81,6 +103,10 @@ export function createLeap(ctx) {
   let vw = window.innerWidth
   let vh = window.innerHeight
   let introT = 0 // 0..1 hero intro animation (set by app after loading)
+  const cueIn = { v: 0 } // the scroll cue arrives once the letters have landed
+  // where the name rests, in vh below the centre: under the falling figure on portrait screens
+  const restY = (w, h) => (h > w ? 17 : 6)
+  let titleY = restY(vw, vh)
 
   // sizes of the words (their rotated bounds) and of the caption text, measured on screen
   const capBox = caps.map(() => ({ x: 0, y: 0, w: 0, h: 0, o: 0 }))
@@ -107,11 +133,26 @@ export function createLeap(ctx) {
     resize(w, h) {
       vw = w
       vh = h
+      titleY = restY(w, h)
       sized = false
     },
     setIntro(v) {
       introT = v
       if (scene.on) scene.update(scene.p, scene.state)
+    },
+    // the name falls into place letter by letter while the loader lifts
+    dropIn(delay = 0) {
+      gsap.to(cueIn, { v: 1, duration: 0.9, delay: delay + 1.7, ease: 'power2.out' })
+      if (ctx.reduced) return
+      gsap.from(letters, {
+        yPercent: -150,
+        rotation: (i) => (i % 2 ? 16 : -12),
+        opacity: 0,
+        duration: 1.25,
+        delay,
+        ease: 'back.out(1.6)',
+        stagger: { each: 0.055, from: 'random' },
+      })
     },
     update(p) {
       scene.p = p
@@ -122,12 +163,16 @@ export function createLeap(ctx) {
       const tp = smoothRange(p, 0, 0.075)
       const ti = expoOut(introT)
       const tScale = lerp(0.72, 1, ti) * (1 + tp * 0.9)
-      const ty = lerp(10, 6, ti) * vh * 0.01 - tp * vh * 0.95
-      title.style.transform = `translate(-50%, -50%) translate3d(${mx * -8}px, ${ty + my * 6}px, 0) scale(${tScale})`
+      const ty = lerp(titleY + 4, titleY, ti) * vh * 0.01 - tp * vh * 0.95
+      // it turns towards the mouse (or the way the phone tilts)
+      const turn = `perspective(900px) rotateX(${(my * 8).toFixed(2)}deg) rotateY(${(mx * 12).toFixed(2)}deg)`
+      title.style.transform = `translate(-50%, -50%) translate3d(${mx * -8}px, ${ty + my * 6}px, 0) ${turn} scale(${tScale})`
       title.style.opacity = clamp(ti * 1.4) * (1 - smoothRange(p, 0.035, 0.08))
       title.style.filter = tp > 0.01 ? `blur(${(tp * 10).toFixed(2)}px)` : 'none'
       intro.style.opacity = clamp(ti * 1.2 - 0.2) * (1 - smoothRange(p, 0.0, 0.035))
       intro.style.transform = `translate3d(0, ${-p * vh * 1.6}px, 0)`
+      // the scroll cue comes in once the name has landed and leaves with the first scroll
+      cue.style.opacity = (cueIn.v * (1 - smoothRange(p, 0.003, 0.025))).toFixed(3)
 
       if (!sized) measure()
 

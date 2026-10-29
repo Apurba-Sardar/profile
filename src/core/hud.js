@@ -83,6 +83,13 @@ export class Hud {
     }
   }
 
+  // the big name is on screen over the hero, so the bar's copy steps aside until it falls away
+  setHero(on) {
+    if (on === this.hero) return
+    this.hero = on
+    this.node.classList.toggle('at-hero', on)
+  }
+
   setSound(on) {
     document.body.classList.toggle('is-sound', on)
     this.soundLabel.textContent = on ? 'Sound on' : 'Sound off'

@@ -380,6 +380,12 @@ main {
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: opacity 0.6s var(--ease);
+}
+/* over the hero the big name is already on screen */
+#hud.at-hero .hud-brand {
+  opacity: 0;
+  pointer-events: none;
 }
 .hud-brand .dot {
   width: 5px;
@@ -659,12 +665,59 @@ main {
   color: rgba(241, 238, 232, 0.86);
 }
 .leap-title {
-  font-size: clamp(54px, 11.4vw, 220px);
+  /* --fs-line: the whole name on one line; --fs-stack: one word per line (portrait), both set from its length */
+  font-size: var(--fs-line, clamp(54px, 11.4vw, 220px));
   transform-style: preserve-3d;
 }
 .leap-title .t-inner {
   display: block;
   transform: perspective(1100px) rotateY(-17deg) rotateX(-7deg) rotateZ(3deg);
+}
+.leap-title .t-word {
+  display: inline-block;
+}
+.leap-title .t-word + .t-word {
+  margin-left: 0.3em;
+}
+.leap-title .t-ch {
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+/* scroll cue: a word and a line with light falling down it */
+.leap-cue {
+  position: absolute;
+  left: 50%;
+  bottom: calc(64px + var(--safe-b));
+  transform: translateX(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  color: #fff;
+  letter-spacing: 0.22em;
+  white-space: nowrap;
+  opacity: 0;
+}
+.leap-cue i {
+  position: relative;
+  width: 1px;
+  height: 48px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.3);
+}
+.leap-cue i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(transparent, #fff 70%, transparent);
+  animation: cue-fall 1.8s cubic-bezier(0.6, 0, 0.3, 1) infinite;
+}
+@keyframes cue-fall {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
 }
 .leap-field {
   position: absolute;
@@ -1101,6 +1154,8 @@ main {
   position: relative;
   background: var(--ink);
   padding: 14vh var(--gutter) 22vh;
+  /* the rows slide in from the right; without this phones could pan sideways */
+  overflow: hidden;
 }
 .services-head {
   font-style: italic;
@@ -1366,6 +1421,18 @@ main {
    sides of the record, so it sits above it, and cases follow each other
    ========================================================================== */
 @media (orientation: portrait) {
+  /* the hero name stacks one word per line, much bigger */
+  .leap-title {
+    font-size: var(--fs-stack, var(--fs-line));
+    text-align: center;
+    line-height: 0.92;
+  }
+  .leap-title .t-word {
+    display: block;
+  }
+  .leap-title .t-word + .t-word {
+    margin-left: 0;
+  }
   .case + .case {
     margin-top: 0;
   }
@@ -1492,6 +1559,12 @@ main {
    Short screens (phones in landscape): size the big type by height
    ========================================================================== */
 @media (max-height: 500px) and (orientation: landscape) {
+  .leap-cue {
+    bottom: calc(48px + var(--safe-b));
+  }
+  .leap-cue i {
+    display: none;
+  }
   .rise-word {
     font-size: 54vh;
   }
@@ -1514,7 +1587,8 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .case-disc .ring,
   .hud-brand .dot,
-  .is-sound .bars i {
+  .is-sound .bars i,
+  .leap-cue i::after {
     animation: none !important;
   }
 }
