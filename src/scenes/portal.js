@@ -69,9 +69,9 @@ export function createPortal(ctx) {
         scene: 'portal',
         rect: { x: 0, y: 0, w: vw, h: vh },
         uniforms: {
-          uOpen: lerp(0, 0.3, smoothRange(p, 0.05, 0.18)) + lerp(0, 0.7, smoothRange(p, 0.18, 0.34)),
-          uHalo: smoothRange(p, 0.22, 0.32) * (1 - smoothRange(p, 0.46, 0.58)),
-          uFlare: smoothRange(p, 0.25, 0.38) * (1 - 0.8 * smoothRange(p, 0.46, 0.62)),
+          uOpen: lerp(0, 0.3, smoothRange(p, 0.05, 0.17)) + lerp(0, 0.7, smoothRange(p, 0.3, 0.42)),
+          uHalo: smoothRange(p, 0.17, 0.27) * (1 - smoothRange(p, 0.44, 0.54)),
+          uFlare: smoothRange(p, 0.24, 0.36) * (1 - 0.8 * smoothRange(p, 0.46, 0.62)),
           uBolt: smoothRange(p, 0.4, 0.76),
           uWalk: walk,
           uFigure: smoothRange(p, 0.38, 0.43),

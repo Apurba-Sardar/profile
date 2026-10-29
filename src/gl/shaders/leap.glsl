@@ -129,12 +129,12 @@ void main() {
   vec2 dir = bd / max(br, 1e-4);
   float n1 = vnoise(dir * 5.0 + vec2(t * 0.05, 0.0));
   float n2 = vnoise(dir * 13.0 - vec2(0.0, t * 0.07));
-  float rays = pow(n1, 4.0) * 2.2 + pow(n2, 7.0) * 2.4;
+  float rays = pow(n1, 5.0) * 2.8 + pow(n2, 8.0) * 2.8;
   float reach = 0.1 + uBurst * 1.1;
   float burst = rays * exp(-br / reach) * smoothstep(0.0, 0.04, br)
               + exp(-br * br / (0.008 + 0.05 * uBurst)) * 1.3;
-  col *= 1.0 - 0.35 * uBurst * (1.0 - exp(-br * 3.0));
-  col += vec3(1.0, 0.7, 0.32) * burst * uBurst * 2.2;
+  col *= 1.0 - 0.6 * uBurst * (1.0 - exp(-br * 2.5));
+  col += vec3(1.0, 0.68, 0.3) * burst * uBurst * 2.1;
 
   col = aces(col);
 

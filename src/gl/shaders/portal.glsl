@@ -34,7 +34,7 @@ float cloudField(vec2 w, float t) {
   float sideL = -w.x - gapHalf(w.y) + lobes;
   float sideR = (w.x - 0.04) - gapHalf(w.y + 0.08) + lobes;
   float side = max(sideL, sideR);
-  float top = (0.14 - 0.17 * abs(w.x)) - w.y + lobes * 1.4;
+  float top = min(-0.09 + 0.36 * abs(w.x), 0.17) - w.y + lobes * 1.4;
   return min(side, top);
 }
 
@@ -155,17 +155,17 @@ void main() {
   float width = mix(0.0016, 0.08, smoothstep(0.3, 1.0, open));
   float hNow = max(DOOR_H * grow, width * 2.0);
   vec2 dp = w - DOOR - vec2(0.0, (DOOR_H - hNow) * 0.55);
-  float jag = (fbm3(vec2(atan(dp.y - 0.25, dp.x) * 5.0, floor(t * 9.0) * 0.4)) - 0.5) * 0.03 * uBolt;
+  float jag = (fbm3(vec2(atan(dp.y - 0.25, dp.x) * 7.0, floor(t * 9.0) * 0.4)) - 0.5) * 0.05 * uBolt;
   float dd = sdArch(dp, width, hNow) + jag;
   float inside = smoothstep(0.0025, -0.0025, dd) * on;
   vec3 core = mix(vec3(1.0, 0.45, 0.24), vec3(0.88, 0.94, 1.0), smoothstep(-0.002, -0.025 - width * 0.4, dd));
   col = mix(col, core * 1.55, inside);
   col += vec3(1.0, 0.33, 0.16) * exp(-max(dd, 0.0) * 32.0) * on * (0.5 + 0.7 * grow);
   col += vec3(1.0, 0.24, 0.18) * exp(-max(dd, 0.0) * 5.5) * 0.28 * uGlow;
-  col += vec3(1.0, 0.86, 0.9) * exp(-abs(dd) * 150.0) * uBolt * 1.3;
+  col += vec3(1.0, 0.86, 0.9) * (exp(-abs(dd) * 170.0) * 1.6 + exp(-abs(dd) * 40.0) * 0.25) * uBolt;
 
   // ---- arch halo
-  float hd = sdArch(w - DOOR - vec2(0.0, -0.025), width * 1.6 + 0.08, DOOR_H * 1.08 + 0.08);
+  float hd = sdArch(w - DOOR - vec2(0.0, -0.03), 0.165, DOOR_H * 1.12 + 0.07);
   col += vec3(1.0, 0.62, 0.55) * (exp(-abs(hd) * 420.0) * 0.55 + exp(-abs(hd) * 60.0) * 0.08) * uHalo;
 
   // ---- lightning

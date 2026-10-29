@@ -33,7 +33,10 @@ export function el(tag, attrs = {}, children = []) {
     if (v === undefined || v === null || v === false) continue
     if (k === 'html') node.innerHTML = v
     else if (k === 'text') node.textContent = v
-    else if (k === 'style' && typeof v === 'object') Object.assign(node.style, v)
+    else if (k === 'style' && typeof v === 'object') {
+      // custom properties (--x) only work through setProperty
+      for (const p in v) p.startsWith('--') ? node.style.setProperty(p, v[p]) : (node.style[p] = v[p])
+    }
     else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v)
     else node.setAttribute(k, v === true ? '' : v)
   }

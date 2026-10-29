@@ -145,7 +145,7 @@ void main() {
   col += vec3(1.0, 0.55, 0.2) * ember * (0.2 + 2.2 * emberLight(w)) * uEmber;
 
   // ---- the burning figure
-  float fs = 0.105;
+  float fs = 0.12;
   vec2 fp = rot(0.32) * w / fs;
   vec2 warp = vec2(fbm3(fp * 2.6 + vec2(0.0, -t * 2.1)), fbm3(fp * 2.6 + vec2(5.2, -t * 2.4))) - 0.5;
   float fd = lyingFigure(fp + warp * 0.32) * fs;
@@ -199,6 +199,8 @@ void main() {
   // warm out-of-focus glow at the frame edges
   col += vec3(0.24, 0.06, 0.035) * smoothstep(0.3, 0.95, abs(suv.x)) * (1.0 - smoothstep(0.1, 0.6, abs(suv.y))) * 0.35;
 
+  // the shot is framed on the circle: sides fall into darkness
+  col *= mix(1.0, 0.28, smoothstep(0.32, 0.85, abs(suv.x)));
   col = aces(col * uExpo);
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(col, vec3(smoothstep(0.02, 0.85, lum)) * vec3(1.0, 0.985, 0.96), uDesat);

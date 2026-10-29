@@ -115,7 +115,7 @@ export function createLeap(ctx) {
       // word field
       const fin = smoothRange(p, 0.012, 0.055)
       const fout = 1 - smoothRange(p, 0.8, 0.9)
-      const sway = Math.sin(p * 9) * 1.6
+      const sway = ctx.reduced ? 0 : Math.sin(p * 9) * 1.6
       field.style.transform = `rotate(${sway}deg)`
       for (const w of words) {
         const yv = wrap(w.y - p * TRAVEL * w.s, -WRAP, WRAP)

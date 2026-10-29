@@ -24,7 +24,7 @@ export function createImpact(ctx) {
       let o = range(p, 0, 0.05)
       // shake right after the hit
       const sk = 1 - range(p, 0.06, 0.22)
-      const amp = p > 0.06 && p < 0.22 ? sk * sk * 16 : 0
+      const amp = p > 0.06 && p < 0.22 && !ctx.reduced ? sk * sk * 16 : 0
       const x = Math.sin(p * 913) * amp
       const y = Math.cos(p * 1187) * amp * 0.6
       // hold, then fall through it

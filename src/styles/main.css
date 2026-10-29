@@ -775,7 +775,7 @@ main {
 }
 .rise-word {
   display: flex;
-  font-size: clamp(110px, 26vw, 520px);
+  font-size: clamp(110px, 31vw, 620px);
   color: #fff;
   letter-spacing: -0.03em;
   line-height: 0.8;
@@ -833,6 +833,7 @@ main {
 }
 .gallery-card {
   position: absolute;
+  z-index: 1;
   left: 50%;
   top: 50%;
   width: min(30vh, 40vw);
@@ -841,6 +842,7 @@ main {
 }
 .gallery-label {
   position: absolute;
+  z-index: 2;
   left: 50%;
   top: calc(50% + min(19.7vh, 26.4vw) + 18px);
   transform: translateX(-50%);

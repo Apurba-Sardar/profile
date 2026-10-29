@@ -58,6 +58,7 @@ export class App {
       sound: this.sound,
       go: (id) => this.go(id),
       copyEmail: () => this.copyEmail(),
+      reduced: this.reduced,
     })
     this.hud = ctx.hud = new Hud(c, {
       onMenu: () => this.menu.toggle(),
