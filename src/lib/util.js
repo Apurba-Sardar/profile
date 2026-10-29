@@ -17,6 +17,31 @@ export const wrap = (v, min, max) => {
   const r = max - min
   return ((((v - min) % r) + r) % r) + min
 }
+/** x (px from the screen centre) moved so a box w px wide stays on a vw px wide screen. */
+export const keepInside = (x, w, vw, margin = 12) => {
+  const m = Math.max(0, vw / 2 - w / 2 - margin)
+  return clamp(x, -m, m)
+}
+/**
+ * Opacity factor that fades a box (centre x, y and size w, h, in px) while it
+ * overlaps any of `boxes` ({ x, y, w, h, o }, o = how visible that box is).
+ */
+export function clearOf(x, y, w, h, boxes, soft = 40) {
+  let k = 1
+  for (const b of boxes) {
+    if (b.o < 0.02) continue
+    const gap = Math.max(Math.abs(x - b.x) - (b.w + w) / 2, Math.abs(y - b.y) - (b.h + h) / 2)
+    k = Math.min(k, 1 - b.o * (1 - clamp(gap / soft)))
+  }
+  return k
+}
+/** Size of the text inside a block (its widest line by all its lines). */
+export function textSize(node) {
+  const r = document.createRange()
+  r.selectNodeContents(node)
+  const b = r.getBoundingClientRect()
+  return { w: b.width, h: b.height }
+}
 
 /** Tiny hyperscript helper. el('section#id.a.b', {attrs}, children) */
 export function el(tag, attrs = {}, children = []) {

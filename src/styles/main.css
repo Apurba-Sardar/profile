@@ -14,7 +14,10 @@
   --orange: #ff6a2b;
   --blue: #4c7dff;
   --line: rgba(241, 238, 232, 0.12);
-  --gutter: clamp(16px, 2.2vw, 34px);
+  /* side margin, never under a notch in landscape; top/bottom insets for the status bar and home indicator */
+  --gutter: max(clamp(16px, 2.2vw, 34px), env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
   --ease: cubic-bezier(0.19, 1, 0.22, 1);
   --ease-io: cubic-bezier(0.77, 0, 0.175, 1);
 }
@@ -339,10 +342,10 @@ main {
   align-items: center;
 }
 .hud-top {
-  top: 20px;
+  top: calc(20px + var(--safe-t));
 }
 .hud-bottom {
-  bottom: 18px;
+  bottom: calc(18px + var(--safe-b));
 }
 .hud-menu {
   justify-self: start;
@@ -458,6 +461,7 @@ main {
   align-items: center;
   overflow: hidden;
   height: 14px;
+  white-space: nowrap;
 }
 .hud-section .name {
   display: inline-block;
@@ -477,18 +481,20 @@ main {
   transform: scaleX(0);
 }
 .hud-meta {
+  --row: 14px;
   justify-self: end;
   text-align: right;
-  height: 14px;
+  height: var(--row);
   overflow: hidden;
+  white-space: nowrap;
 }
 .hud-meta > * {
   display: block;
-  height: 14px;
+  height: var(--row);
   transition: transform 0.6s var(--ease);
 }
 .hud-meta.show-index > * {
-  transform: translateY(-14px);
+  transform: translateY(calc(-1 * var(--row)));
 }
 
 /* ==========================================================================
@@ -637,7 +643,7 @@ main {
 .menu-foot {
   position: absolute;
   left: var(--gutter);
-  bottom: 52px;
+  bottom: calc(52px + var(--safe-b));
   color: var(--muted);
 }
 
@@ -877,6 +883,8 @@ main {
   height: 100vh;
   height: 100svh;
   overflow: hidden;
+  /* the record's size; the title's hole and the year are placed from it */
+  --disc: min(36vh, 64vw);
 }
 .case-top {
   position: absolute;
@@ -901,8 +909,9 @@ main {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole, 22vh), #000 calc(var(--hole, 22vh) + 1px));
-  mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole, 22vh), #000 calc(var(--hole, 22vh) + 1px));
+  --hole: calc(var(--disc) * 0.611);
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px));
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px));
 }
 .case-track {
   display: flex;
@@ -920,7 +929,7 @@ main {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: min(36vh, 64vw);
+  width: var(--disc);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
 }
@@ -958,8 +967,8 @@ main {
 }
 .case-year {
   position: absolute;
-  left: calc(50% + min(19vh, 34vw));
-  top: calc(50% - min(16vh, 28vw));
+  left: calc(50% + var(--disc) * 0.528);
+  top: calc(50% - var(--disc) * 0.444);
   font-family: var(--f-display);
   font-stretch: 112%;
   font-weight: 700;
@@ -969,7 +978,7 @@ main {
 .case-info {
   position: absolute;
   left: var(--gutter);
-  bottom: 70px;
+  bottom: calc(70px + var(--safe-b));
   width: min(380px, 80vw);
   display: grid;
   gap: 10px;
@@ -991,7 +1000,7 @@ main {
 .case-cta {
   position: absolute;
   right: var(--gutter);
-  bottom: 62px;
+  bottom: calc(62px + var(--safe-b));
 }
 @keyframes spin {
   to {
@@ -1120,7 +1129,8 @@ main {
   clip-path: inset(100% 0 0 0);
   transition: clip-path 0.55s var(--ease);
 }
-.service:hover .fill {
+.service:hover .fill,
+.service.is-lit .fill {
   clip-path: inset(0 0 0 0);
 }
 .service h3 {
@@ -1136,7 +1146,9 @@ main {
   transition: color 0.35s var(--ease);
 }
 .service:hover h3,
-.service:hover p {
+.service:hover p,
+.service.is-lit h3,
+.service.is-lit p {
   color: #0b0b0d;
 }
 .service-preview {
@@ -1279,7 +1291,7 @@ main {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: 54px;
+  bottom: calc(54px + var(--safe-b));
   z-index: 120;
   transform: translate(-50%, 20px);
   opacity: 0;
@@ -1298,16 +1310,125 @@ main {
 }
 
 /* ==========================================================================
+   Touch screens: ~44px hit areas, without moving anything
+   ========================================================================== */
+@media (pointer: coarse) {
+  .hud-menu,
+  .hud-brand,
+  .hud-sound,
+  .hud-talk,
+  .contact-email {
+    position: relative;
+  }
+  .hud-menu::before,
+  .hud-brand::before,
+  .hud-sound::before,
+  .hud-talk::before,
+  .socials a::before,
+  .contact-email::before,
+  .w.pill::before,
+  .case-cta::before {
+    content: '';
+    position: absolute;
+    inset: -15px -10px;
+  }
+  .hud-brand::before {
+    inset: -15px -4px;
+  }
+  .socials a::before {
+    inset: -15px -11px;
+  }
+  .contact-email::before {
+    inset: -10px 0;
+  }
+  /* pills that ride the scenes are absolutely positioned, so the area can grow around them */
+  .w.pill::before,
+  .case-cta::before {
+    inset: -8px -4px;
+  }
+  /* the corner label clips its two rows, so the rows themselves get taller */
+  .hud-meta {
+    --row: 40px;
+  }
+  .hud-meta > * {
+    line-height: var(--row);
+  }
+  .hud-bottom {
+    bottom: calc(5px + var(--safe-b));
+  }
+  .menu-list a {
+    padding: 5px 0;
+  }
+}
+
+/* ==========================================================================
+   Portrait screens (phones, tablets): there is no room for the title on both
+   sides of the record, so it sits above it, and cases follow each other
+   ========================================================================== */
+@media (orientation: portrait) {
+  .case + .case {
+    margin-top: 0;
+  }
+  .case-pin {
+    --disc: min(30vh, 60vw);
+    --mid: 43%;
+  }
+  .case-title {
+    top: calc(var(--mid) - var(--disc) / 2 - 2vh);
+    transform: translateY(-100%);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .case-track {
+    font-size: 16vw;
+  }
+  .case-disc {
+    top: var(--mid);
+  }
+  .case-year {
+    left: auto;
+    right: var(--gutter);
+    top: calc(var(--mid) + var(--disc) / 2 + 1.5vh);
+  }
+}
+
+/* ==========================================================================
    Small screens
    ========================================================================== */
 @media (max-width: 760px) {
+  .ui {
+    font-size: 11px;
+  }
   .hud-brand .role,
   .hud-brand .dot,
   .hud-sound .label {
     display: none;
   }
+  /* sound sits next to the menu so the name stays centred and nothing wraps */
   .hud-right {
-    gap: 14px;
+    display: contents;
+  }
+  .hud-menu {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .hud-brand {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .hud-sound {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    margin-left: 72px;
+  }
+  .hud-talk {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .hud-progress {
+    width: 44px;
   }
   .leap-intro {
     left: var(--gutter);
@@ -1321,13 +1442,13 @@ main {
     display: none;
   }
   .case-top {
-    top: 58px;
+    top: calc(58px + var(--safe-t));
   }
   .case-top .kicker {
     display: none;
   }
   .case-info {
-    bottom: 104px;
+    bottom: calc(108px + var(--safe-b));
   }
   .case-info .meta {
     display: none;
@@ -1335,12 +1456,7 @@ main {
   .case-cta {
     left: var(--gutter);
     right: auto;
-    bottom: 46px;
-  }
-  .case-year {
-    left: auto;
-    right: var(--gutter);
-    top: 22vh;
+    bottom: calc(50px + var(--safe-b));
   }
   .about-statement {
     margin-left: 0;
@@ -1359,6 +1475,9 @@ main {
     gap: 6px;
     padding: 14px 6px;
   }
+  .service p {
+    font-size: 15px;
+  }
   .contact-row {
     grid-template-columns: 1fr;
     gap: 22px;
@@ -1366,6 +1485,29 @@ main {
   }
   .contact-again {
     justify-self: start;
+  }
+}
+
+/* ==========================================================================
+   Short screens (phones in landscape): size the big type by height
+   ========================================================================== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .rise-word {
+    font-size: 54vh;
+  }
+  .cta-head {
+    font-size: 10.5vh;
+  }
+  .menu-inner {
+    padding-top: 64px;
+    padding-bottom: 56px;
+  }
+  .menu-list a {
+    font-size: 7.4vh;
+    padding: 1px 0;
+  }
+  .menu-foot {
+    display: none;
   }
 }
 

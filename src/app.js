@@ -104,6 +104,12 @@ export class App {
     await this.load()
     this.initScroll()
     this.bindResize()
+    // fonts that arrive after the loader stopped waiting (slow networks) change text sizes
+    document.fonts?.addEventListener?.('loadingdone', () => {
+      this.stage.measure()
+      ScrollTrigger.refresh()
+      this.measureChapters()
+    })
     gsap.ticker.add(this.frame)
     this.reveal()
   }

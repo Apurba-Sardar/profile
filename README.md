@@ -25,7 +25,12 @@ scrubbed by scroll and layered with motion typography in GSAP.
 
 Also included: smooth scrolling (Lenis), a `difference`-blend custom cursor, a full-screen chapter menu with previews,
 a generative WebAudio soundtrack (drone, falling wind that follows your scroll speed, crowd murmur, impact boom,
-portal choir — no audio files), a loader, mobile layout and `prefers-reduced-motion` support.
+portal choir — no audio files), a loader and `prefers-reduced-motion` support.
+
+On phones and tablets: portrait layouts (case titles above the records, cases that scroll in one after another),
+~44px touch areas on every control, safe-area insets for notches and the home indicator, floating words that stay
+on screen and step aside for captions, and services that light up as they cross the middle of the screen
+instead of on hover.
 
 ## Run it
 

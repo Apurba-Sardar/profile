@@ -1,4 +1,4 @@
-import { el, lerp, range, smoothRange, window01, easeOut } from '../lib/util.js'
+import { el, lerp, range, smoothRange, window01, easeOut, keepInside, clearOf, textSize } from '../lib/util.js'
 
 // Where every letter of RISE flies in from (vw, vh, deg, scale).
 const FROM = [
@@ -57,6 +57,21 @@ export function createRise(ctx) {
   let vw = window.innerWidth
   let vh = window.innerHeight
 
+  // side words stay on screen and the pill keeps clear of the caption, so both are measured on screen
+  const capBox = { x: 0, y: 0, w: 0, h: 0, o: 0 }
+  const wordBox = { x: 0, y: 0, w: 0, h: 0, o: 0, w0: 0, h0: 0 }
+  let sized = false
+  const measure = () => {
+    for (const s of side) {
+      s.w = s.node.offsetWidth
+      s.h = s.node.offsetHeight
+    }
+    Object.assign(capBox, textSize(cap))
+    wordBox.w0 = wordWrap.offsetWidth
+    wordBox.h0 = wordWrap.offsetHeight
+    sized = true
+  }
+
   const scene = {
     id: 'rise',
     section,
@@ -66,6 +81,7 @@ export function createRise(ctx) {
     resize(w, h) {
       vw = w
       vh = h
+      sized = false
     },
     update(p) {
       // assemble
@@ -80,18 +96,31 @@ export function createRise(ctx) {
       // recede above the standing figure
       const k = smoothRange(p, 0.48, 0.76)
       const wy = lerp(0, -1, k)
-      wordWrap.style.transform = `translate(-50%, -50%) translate3d(0, ${(wy * vh) / 100}px, 0) scale(${lerp(1, 0.5, k)})`
+      const ws = lerp(1, 0.5, k)
+      wordWrap.style.transform = `translate(-50%, -50%) translate3d(0, ${(wy * vh) / 100}px, 0) scale(${ws})`
       wordWrap.style.opacity = (1 - smoothRange(p, 0.86, 0.98)).toFixed(3)
+      wordBox.y = (wy * vh) / 100
+      wordBox.w = wordBox.w0 * ws
+      wordBox.h = wordBox.h0 * ws
+      wordBox.o = smoothRange(p, 0.1, 0.3) * (1 - smoothRange(p, 0.86, 0.98))
 
+      if (!sized) measure()
       const cp = range(p, 0.22, 0.95)
-      cap.style.transform = `translate(-50%, -50%) translate3d(0, ${(lerp(30, -22, easeOut(cp)) * vh) / 100}px, 0)`
-      cap.style.opacity = window01(cp, 0, 1, 0.14).toFixed(3)
+      capBox.y = (lerp(30, -22, easeOut(cp)) * vh) / 100
+      capBox.o = window01(cp, 0, 1, 0.14)
+      cap.style.transform = `translate(-50%, -50%) translate3d(0, ${capBox.y}px, 0)`
+      cap.style.opacity = capBox.o.toFixed(3)
 
+      // the pill keeps clear of the caption, and on phones (no room beside it) of the word too
+      const avoid = vw < 760 ? [capBox, wordBox] : [capBox]
       for (const s of side) {
-        const y = s.y - p * 32 * s.s
-        const o = window01(p, 0.0, 0.94, 0.12)
-        s.node.style.transform = `translate(-50%, -50%) translate3d(${(s.x * vw) / 100}px, ${(y * vh) / 100}px, 0)`
+        const x = keepInside((s.x * vw) / 100, s.w, vw)
+        const y = ((s.y - p * 32 * s.s) * vh) / 100
+        let o = window01(p, 0.0, 0.94, 0.12)
+        if (s.pill) o *= clearOf(x, y, s.w, s.h, avoid)
+        s.node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0)`
         s.node.style.opacity = o.toFixed(3)
+        if (s.pill) s.node.style.visibility = o < 0.01 ? 'hidden' : 'visible'
       }
     },
   }

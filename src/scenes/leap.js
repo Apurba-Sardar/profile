@@ -1,4 +1,4 @@
-import { el, lerp, range, smoothRange, window01, wrap, expoOut, clamp } from '../lib/util.js'
+import { el, lerp, range, smoothRange, window01, wrap, expoOut, clamp, keepInside, clearOf, textSize } from '../lib/util.js'
 
 // font-size (vw) so a word of this length fits inside maxW (vw)
 const fit = (t, max, maxW) => Math.min(max, maxW / (t.length * 0.8))
@@ -26,6 +26,7 @@ function fieldFrom(w) {
 }
 const TRAVEL = 430 // vh travelled by a speed-1 word over the whole fall
 const WRAP = 135 // words recycle between -WRAP and +WRAP vh
+const PERSPECTIVE = 1400 // px, as on .leap-field
 
 export function createLeap(ctx) {
   const { content, go } = ctx
@@ -54,7 +55,7 @@ export function createLeap(ctx) {
         go(f.go)
       })
     } else if (f.k === 'serif') {
-      node = el('div.w.is-serif', { text: f.t, style: { fontSize: f.size + 'vw' } })
+      node = el('div.w.is-serif', { text: f.t, style: { fontSize: `max(13px, ${f.size}vw)` } })
     } else if (f.k === 'code') {
       node = el('div.w.is-code', { text: f.t })
     } else if (f.k.startsWith('outline')) {
@@ -81,6 +82,21 @@ export function createLeap(ctx) {
   let vh = window.innerHeight
   let introT = 0 // 0..1 hero intro animation (set by app after loading)
 
+  // sizes of the words (their rotated bounds) and of the caption text, measured on screen
+  const capBox = caps.map(() => ({ x: 0, y: 0, w: 0, h: 0, o: 0 }))
+  let sized = false
+  const measure = () => {
+    for (const w of words) {
+      const a = ((w.rot || 0) * Math.PI) / 180
+      const ow = w.node.offsetWidth
+      const oh = w.node.offsetHeight
+      w.w = Math.abs(ow * Math.cos(a)) + Math.abs(oh * Math.sin(a))
+      w.h = Math.abs(ow * Math.sin(a)) + Math.abs(oh * Math.cos(a))
+    }
+    caps.forEach((cap, i) => Object.assign(capBox[i], textSize(cap)))
+    sized = true
+  }
+
   const scene = {
     id: 'leap',
     section,
@@ -91,6 +107,7 @@ export function createLeap(ctx) {
     resize(w, h) {
       vw = w
       vh = h
+      sized = false
     },
     setIntro(v) {
       introT = v
@@ -112,6 +129,21 @@ export function createLeap(ctx) {
       intro.style.opacity = clamp(ti * 1.2 - 0.2) * (1 - smoothRange(p, 0.0, 0.035))
       intro.style.transform = `translate3d(0, ${-p * vh * 1.6}px, 0)`
 
+      if (!sized) measure()
+
+      // captions (first, so the pills can keep clear of them)
+      caps.forEach((cap, i) => {
+        const [a, b] = CAPW[i]
+        const lp = range(p, a, b)
+        const last = i === CAPW.length - 1
+        const yv = last ? lerp(38, -40, Math.pow(lp, 0.85)) : lerp(36, -36, lp)
+        const o = last ? smoothRange(lp, 0, 0.12) * (1 - smoothRange(p, 0.985, 1)) : window01(lp, 0, 1, 0.2)
+        capBox[i].y = (yv * vh) / 100
+        capBox[i].o = o
+        cap.style.transform = `translate(-50%, -50%) translate3d(0, ${capBox[i].y}px, 0)`
+        cap.style.opacity = o.toFixed(3)
+      })
+
       // word field
       const fin = smoothRange(p, 0.012, 0.055)
       const fout = 1 - smoothRange(p, 0.8, 0.9)
@@ -119,10 +151,17 @@ export function createLeap(ctx) {
       field.style.transform = `rotate(${sway}deg)`
       for (const w of words) {
         const yv = wrap(w.y - p * TRAVEL * w.s, -WRAP, WRAP)
-        const x = (w.x * vw) / 100 + mx * w.z * 0.05
+        let x = (w.x * vw) / 100 + mx * w.z * 0.05
         const y = (yv * vh) / 100 - my * w.z * 0.04
         const ghost = w.ghost ? 0.32 * ti : 0
-        const o = w.op * Math.max(ghost, fin) * fout
+        let o = w.op * Math.max(ghost, fin) * fout
+        // the hollow giants may run off the edges; everything else stays on screen, and the
+        // pills fade while they cross a caption (f: the field's perspective scale at this depth)
+        if (!w.k.startsWith('outline')) {
+          const f = PERSPECTIVE / (PERSPECTIVE - w.z)
+          x = keepInside(x * f, w.w * f, vw) / f
+          if (w.k === 'pill') o *= clearOf(x * f, y * f, w.w * f, w.h * f, capBox)
+        }
         let tr = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${w.z}px)`
         if (w.rot) tr += ` rotate(${w.rot}deg)`
         if (w.skew) tr += ` skewX(${w.skew}deg)`
@@ -131,18 +170,6 @@ export function createLeap(ctx) {
         if (w.ghost) w.node.style.filter = fin < 0.95 ? `blur(${((1 - fin) * 5).toFixed(2)}px)` : 'none'
         w.node.style.visibility = o < 0.01 ? 'hidden' : 'visible'
       }
-
-      // captions
-      caps.forEach((cap, i) => {
-        const [a, b] = CAPW[i]
-        const lp = range(p, a, b)
-        const last = i === CAPW.length - 1
-        const yv = last ? lerp(38, -40, Math.pow(lp, 0.85)) : lerp(36, -36, lp)
-        const o = last ? smoothRange(lp, 0, 0.12) * (1 - smoothRange(p, 0.985, 1)) : window01(lp, 0, 1, 0.2)
-        cap.style.transform = `translate(-50%, -50%) translate3d(0, ${(yv * vh) / 100}px, 0)`
-        cap.style.opacity = o.toFixed(3)
-      })
-
     },
     render(r, t) {
       const st = scene.state

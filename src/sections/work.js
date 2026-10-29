@@ -131,7 +131,11 @@ export function createWork(ctx) {
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, stagger: 0.05, scrollTrigger: { trigger: c.node, start: 'top 60%', end: 'top 10%', scrub: true } },
       )
-      gsap.to(fades, { opacity: 0, y: -30, scrollTrigger: { trigger: c.node, start: 'bottom 70%', end: 'bottom 30%', scrub: true } })
+      const leaving = c.node.querySelectorAll('.case-info, .case-cta, .case-year')
+      gsap.to(leaving, { opacity: 0, y: -30, scrollTrigger: { trigger: c.node, start: 'bottom 70%', end: 'bottom 30%', scrub: true } })
+      // the labels at the top would slide under the bar first, so they go as soon as the case starts to leave
+      const labels = c.node.querySelector('.case-top')
+      gsap.to(labels, { opacity: 0, scrollTrigger: { trigger: c.node, start: 'bottom bottom', end: 'bottom 95%', scrub: true } })
     })
   }
 

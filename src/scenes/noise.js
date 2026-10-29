@@ -1,4 +1,4 @@
-import { el, lerp, range, smoothRange, window01, clamp, easeOut } from '../lib/util.js'
+import { el, lerp, range, smoothRange, window01, clamp, easeOut, keepInside } from '../lib/util.js'
 
 // Positions of the "noise" (client clichés) in vw / vh from centre.
 const PHRASES = [
@@ -36,6 +36,7 @@ export function createNoise(ctx) {
 
   let vw = window.innerWidth
   let vh = window.innerHeight
+  let sized = false // widths of the bits, measured on screen
 
   const scene = {
     id: 'noise',
@@ -46,8 +47,13 @@ export function createNoise(ctx) {
     resize(w, h) {
       vw = w
       vh = h
+      sized = false
     },
     update(p) {
+      if (!sized) {
+        for (const b of bits) b.w = b.node.offsetWidth
+        sized = true
+      }
       const ex = smoothRange(p, 0.55, 0.64) // the shockwave scatters the noise
 
       // NOISE outline rising through the frame
@@ -60,7 +66,9 @@ export function createNoise(ctx) {
         const y = b.y - range(p, 0, 0.62) * 70 * b.s
         const sx = 1 + ex * 0.7
         const o = window01(p, 0.03, 0.62, 0.12) * (1 - ex)
-        b.node.style.transform = `translate(-50%, -50%) translate3d(${(b.x * sx * vw) / 100}px, ${(y * sx * vh) / 100}px, 0) rotate(${b.r || 0}deg) scale(${1 + ex * 0.6})`
+        // on screen until the shockwave throws them outwards
+        const x = keepInside((b.x * vw) / 100, b.w, vw) * sx
+        b.node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${(y * sx * vh) / 100}px, 0) rotate(${b.r || 0}deg) scale(${1 + ex * 0.6})`
         b.node.style.opacity = o.toFixed(3)
         b.node.style.filter = ex > 0.02 ? `blur(${(ex * 8).toFixed(1)}px)` : ''
       }

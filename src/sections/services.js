@@ -1,4 +1,5 @@
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { el, isTouch } from '../lib/util.js'
 
 /** Services list: rows flood white on hover and a preview card trails the cursor. */
@@ -32,7 +33,19 @@ export function createServices(ctx) {
           .fromTo(p, { opacity: 0, x: 30 }, { opacity: 1, x: 0, ease: 'power2.out' }, 0.2)
       })
 
-      if (isTouch()) return
+      if (isTouch()) {
+        // no hover on touch screens: the row crossing the middle of the screen floods instead
+        rows.forEach((row, i) =>
+          ScrollTrigger.create({
+            trigger: row,
+            start: 'top center',
+            end: 'bottom center',
+            toggleClass: 'is-lit',
+            onToggle: (st) => st.isActive && ctx.sound.tick(1500 + i * 220, 0.03),
+          }),
+        )
+        return
+      }
       const xTo = gsap.quickTo(preview, 'x', { duration: 0.6, ease: 'power3' })
       const yTo = gsap.quickTo(preview, 'y', { duration: 0.6, ease: 'power3' })
       let active = -1
