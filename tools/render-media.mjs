@@ -95,6 +95,7 @@ await page.setViewportSize({ width: 1200, height: 630 })
 await page.goto(BASE + '/')
 await page.waitForFunction(() => getComputedStyle(document.getElementById('loader')).display === 'none', null, { timeout: 120000 })
 await page.waitForTimeout(2600)
+await page.addStyleTag({ content: '#cursor { display: none !important; }' })
 await writeFile(new URL('og.jpg', OUT), await page.screenshot({ type: 'jpeg', quality: 86 }))
 console.log('wrote og.jpg')
 

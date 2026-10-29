@@ -55,10 +55,14 @@ float crowd(vec2 uv, float t, float light, out vec3 col, out float shadow) {
       float sd = sdCap(q, vec2(0.0), sdir * h * (0.6 + 1.2 * pr), 0.12 * h, 0.2 * h);
       shadow = max(shadow, smoothstep(0.004, -0.006, sd) * 0.75);
       if (q.y < -0.15 * h || q.y > 1.3 * h || abs(q.x) > 0.5 * h) continue;
-      float legs = sdCap(q, vec2(0.0, 0.03 * h), vec2(0.0, 0.42 * h), 0.09 * h, 0.12 * h);
-      float torso = sdCap(q, vec2(0.0, 0.42 * h), vec2(0.0, 0.7 * h), 0.14 * h, 0.18 * h);
-      float headD = length(q - vec2(0.0, 0.87 * h)) - 0.1 * h;
-      float d = min(smin(legs, torso, 0.06 * h), headD);
+      float lean = (rnd.x - 0.5) * 0.08 * h;
+      vec2 qq = q - vec2(lean * q.y / h, 0.0);
+      float wide = 0.9 + 0.25 * fract(rnd.y * 5.1);
+      float legs = sdCap(qq, vec2(0.0, 0.03 * h), vec2(0.0, 0.42 * h), 0.085 * h * wide, 0.12 * h * wide);
+      float torso = sdCap(qq, vec2(0.0, 0.43 * h), vec2(0.0, 0.66 * h), 0.15 * h * wide, 0.2 * h * wide);
+      float shoulders = sdCap(qq, vec2(-0.13 * h * wide, 0.68 * h), vec2(0.13 * h * wide, 0.68 * h), 0.07 * h, 0.07 * h);
+      float headD = length(qq - vec2(0.0, 0.86 * h)) - 0.095 * h;
+      float d = min(smin(smin(legs, torso, 0.06 * h), shoulders, 0.05 * h), headD);
       float raise = step(0.86, fract(rnd.x * 7.3));
       if (raise > 0.5) {
         float sgn = rnd.y > 0.5 ? 1.0 : -1.0;
@@ -74,13 +78,15 @@ float crowd(vec2 uv, float t, float light, out vec3 col, out float shadow) {
         float rim = pow(sat(dot(n, toFire)), 2.0);
         vec3 cloth = vec3(0.05, 0.045, 0.05) * (0.6 + 0.8 * rnd.y);
         float pick = fract(rnd.x * 13.7);
-        if (pick < 0.16) cloth = vec3(0.5, 0.07, 0.035);
-        else if (pick < 0.27) cloth = vec3(0.78, 0.25, 0.07);
-        else if (pick < 0.33) cloth = vec3(0.3, 0.3, 0.32);
+        if (pick < 0.12) cloth = vec3(0.42, 0.07, 0.04);
+        else if (pick < 0.2) cloth = vec3(0.6, 0.2, 0.07);
+        else if (pick < 0.27) cloth = vec3(0.22, 0.22, 0.24);
         float headMask = smoothstep(0.004, -0.004, headD);
-        vec3 front = mix(cloth, vec3(0.55, 0.32, 0.22), headMask * 0.6) * (0.12 + 2.1 * L);
-        vec3 back = cloth * (0.06 + 0.3 * L);
-        col = mix(back, front, far) + vec3(1.0, 0.5, 0.18) * rim * L * (0.35 + 0.9 * (1.0 - far));
+        // light falls off down the body: heads and shoulders catch the fire
+        float up = smoothstep(0.1 * h, 0.8 * h, q.y);
+        vec3 front = mix(cloth, vec3(0.5, 0.3, 0.22), headMask * 0.55) * (0.08 + 1.5 * L * (0.45 + 0.55 * up));
+        vec3 back = cloth * (0.05 + 0.22 * L);
+        col = mix(back, front, far) + vec3(1.0, 0.5, 0.18) * rim * L * (0.3 + 0.8 * (1.0 - far)) * (0.5 + 0.5 * up);
       }
     }
   }
@@ -139,7 +145,7 @@ void main() {
   col += vec3(1.0, 0.55, 0.2) * ember * (0.2 + 2.2 * emberLight(w)) * uEmber;
 
   // ---- the burning figure
-  float fs = 0.085;
+  float fs = 0.105;
   vec2 fp = rot(0.32) * w / fs;
   vec2 warp = vec2(fbm3(fp * 2.6 + vec2(0.0, -t * 2.1)), fbm3(fp * 2.6 + vec2(5.2, -t * 2.4))) - 0.5;
   float fd = lyingFigure(fp + warp * 0.32) * fs;
@@ -148,7 +154,7 @@ void main() {
   float flame = fbm3(w * 22.0 - normalize(w + 1e-4) * t * 1.6);
   col += (vec3(1.0, 0.95, 0.78) * smoothstep(0.004, -0.006, fd) * 1.5
         + vec3(1.0, 0.52, 0.14) * exp(-max(fd, 0.0) * 50.0) * (1.0 + flame)
-        + vec3(0.9, 0.22, 0.04) * exp(-max(fd, 0.0) * 13.0) * 0.6) * burn * flick;
+        + vec3(0.9, 0.22, 0.04) * exp(-max(fd, 0.0) * 11.0) * 0.7) * burn * flick;
 
   // ---- shockwave
   if (uExplode > 0.0) {
@@ -191,7 +197,7 @@ void main() {
   }
 
   // warm out-of-focus glow at the frame edges
-  col += vec3(0.24, 0.06, 0.035) * smoothstep(0.3, 0.95, abs(suv.x)) * (1.0 - smoothstep(0.1, 0.6, abs(suv.y))) * 0.7;
+  col += vec3(0.24, 0.06, 0.035) * smoothstep(0.3, 0.95, abs(suv.x)) * (1.0 - smoothstep(0.1, 0.6, abs(suv.y))) * 0.35;
 
   col = aces(col * uExpo);
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
