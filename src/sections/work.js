@@ -54,12 +54,22 @@ export function createWork(ctx) {
       [...repeated].map((ch) => el('span.ch', { text: ch })),
     )
     const glHole = el('div.gl-hole')
-    const disc = el('div.case-disc', { 'data-hover': '' }, [ring(p.ring, `ring-${i}`), glHole, el('span.hole')])
-    const cta = el('a.pill.ui.case-cta', { href: '#contact', text: w.cta })
-    cta.addEventListener('click', (e) => {
-      e.preventDefault()
-      go('contact')
-    })
+    const discParts = [ring(p.ring, `ring-${i}`), glHole, el('span.hole')]
+    let disc, cta
+    if (p.url) {
+      // a live product: the record and the button open it
+      const host = new URL(p.url).host.toUpperCase()
+      const out = { href: p.url, target: '_blank', rel: 'noopener' }
+      disc = el('a.case-disc', { ...out, 'data-cursor': 'VISIT', 'aria-label': `Visit ${host}` }, discParts)
+      cta = el('a.pill.ui.case-cta', { ...out, text: `VISIT ${host} ↗` })
+    } else {
+      disc = el('div.case-disc', { 'data-hover': '' }, discParts)
+      cta = el('a.pill.ui.case-cta', { href: '#contact', text: w.cta })
+      cta.addEventListener('click', (e) => {
+        e.preventDefault()
+        go('contact')
+      })
+    }
     const node = el('article.case', { style: { '--c': p.color }, 'aria-label': p.name }, [
       el('div.case-pin', {}, [
         el('div.case-top', {}, [
@@ -70,7 +80,7 @@ export function createWork(ctx) {
         el('div.case-title', {}, [track]),
         el('h3.sr-only', { text: p.name }),
         disc,
-        el('div.case-year', { text: `©® ${p.year}` }),
+        p.year ? el('div.case-year', { text: `©® ${p.year}` }) : null,
         el('div.case-info', {}, [
           el('span.cat.ui', { text: p.category }),
           el('p.desc.serif', { text: p.description }),

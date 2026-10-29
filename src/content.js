@@ -9,7 +9,7 @@ export const content = {
     wordmark: 'APURBA', // the giant blurred word behind the index of work
     monogram: 'A/S',
     role: 'SOFTWARE DEVELOPER',
-    intro: 'Independent software developer.<br>This portfolio starts with a fall.',
+    intro: 'Software developer with 4+ years of experience.<br>This portfolio starts with a fall.',
     year: 2026,
   },
 
@@ -73,65 +73,40 @@ export const content = {
 
   work: {
     heading: 'SELECTED WORK',
-    cta: 'TALK ABOUT A PROJECT LIKE THIS',
+    cta: 'TALK ABOUT A PROJECT LIKE THIS', // button for projects without a url
+    // url: the live site (the record and the button open it); year (optional) shows next to the record
     projects: [
       {
-        name: 'SOLACE',
-        client: 'CONCEPT',
-        category: 'MUSIC STREAMING APP',
-        year: 2026,
+        name: 'WEBNESTLE',
+        client: 'MY VENTURE',
+        category: 'WEB AGENCY',
+        url: 'https://webnestle.in',
         color: '#e8b64c',
-        ring: 'SOLACE — MUSIC STREAMING APP — 3 PLATFORMS, 1 CODEBASE — ',
-        description:
-          'A concept for an offline-first music streaming app: instant playback and one codebase for web, iOS and Android.',
-        meta: ['TypeScript, React', 'Concept'],
+        ring: 'WEBNESTLE — WEB AGENCY — WEBSITES & WEB APPS — WEBNESTLE.IN — ',
+        description: 'My web agency: websites and web apps for businesses, from the first sketch to launch.',
+        meta: ['Founder', 'webnestle.in'],
         scene: 'leap',
       },
       {
-        name: 'EMBERFALL',
-        client: 'CONCEPT',
-        category: 'BROWSER GAME',
-        year: 2026,
+        name: 'LOOTDOST',
+        client: 'MY VENTURE',
+        category: 'DEAL-FINDING COMMUNITY',
+        url: 'https://lootdost.in',
         color: '#ff6a1f',
-        ring: 'WEBGL GAME — 1 ENGINE, 60 FPS TARGET — EMBERFALL — ',
-        description:
-          'A browser game concept about a city that catches fire one person at a time, rendered by a hand-written WebGL engine.',
-        meta: ['TypeScript, WebGL, GLSL', 'Concept'],
+        ring: 'LOOTDOST — E-COMMERCE DEAL-FINDING COMMUNITY — LOOTDOST.IN — ',
+        description: 'An online community that finds the best e-commerce deals and shares them with its members.',
+        meta: ['Founder', 'lootdost.in'],
         scene: 'ember',
-      },
-      {
-        name: 'THE CROWD',
-        client: 'CONCEPT',
-        category: 'REAL-TIME PLATFORM',
-        year: 2025,
-        color: '#ece5d8',
-        ring: 'REAL-TIME TICKETING — ONE QUEUE, THOUSANDS OF PEOPLE — THE CROWD — ',
-        description:
-          'A ticketing concept for a design festival, designed so thousands of people can join one queue in the same second.',
-        meta: ['Python, WebSockets', 'Concept'],
-        scene: 'crowd',
-      },
-      {
-        name: 'THRESHOLD',
-        client: 'THIS WEBSITE',
-        category: 'CREATIVE DEVELOPMENT',
-        year: 2026,
-        color: '#4c7dff',
-        ring: 'IMMERSIVE WEBSITE, 2026 — 3 REAL-TIME FILMS, 0 VIDEO FILES — THRESHOLD — ',
-        description:
-          'The site you are scrolling: real-time WebGL films, scroll-driven type and a generative soundtrack, without a single video file.',
-        meta: ['WebGL, GLSL, GSAP, Vite', 'Live'],
-        scene: 'portal',
       },
     ],
   },
 
   about: {
     statement:
-      'I build software for the second after the fall, when everything is noise and one idea refuses to stay down. Interfaces, web apps and interactive experiences for teams that would rather ship than talk about shipping.',
+      'For 4+ years I have built software for the second after the fall, when everything is noise and one idea refuses to stay down. Websites, web apps and the IT that keeps a business running.',
     notes: [
-      'Every project, one rule: if it only works on my machine, it isn’t finished yet.',
-      'Based in Kolkata, working with teams anywhere. Open to freelance projects and full-time roles.',
+      'Currently IT Manager at The Minds Journal, and pursuing an MBA in Business Analytics.',
+      'Building Webnestle, my web agency, and LootDost, an online deal-finding community. Based in Kolkata.',
     ],
   },
 
@@ -186,7 +161,7 @@ export const content = {
   },
 
   contact: {
-    availability: 'Open to freelance projects and full-time roles.',
+    availability: 'Open to freelance web projects through Webnestle.',
     email: 'sardarapurba9@gmail.com',
     city: 'Kolkata', // shown next to the live clock
     timezone: 'Asia/Kolkata', // any IANA zone
