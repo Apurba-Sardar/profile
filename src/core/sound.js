@@ -1,15 +1,23 @@
 /**
- * Generative soundtrack, no audio files: a low drone, wind that follows the
- * scroll velocity (the fall), a crowd murmur for THE NOISE, a sub boom on
- * IMPACT and a slow choir pad for THE PORTAL. Starts muted; browsers only let
- * audio start after a user gesture anyway.
+ * Soundtrack: an optional music track (content.music) plus generative layers: a low drone,
+ * wind that follows the scroll velocity (the fall), a crowd murmur for THE NOISE, a sub boom on
+ * IMPACT and a slow choir pad for THE PORTAL. With music playing, the tonal layers (drone,
+ * choir) step back and the music is analysed so the visuals can move with its beat.
+ * Starts muted; browsers only let audio start after a user gesture anyway.
  */
 export class Sound {
-  constructor() {
+  constructor(music = null) {
     this.on = false
     this.ctx = null
     this.scene = 'leap'
     this.velocity = 0
+    this.music = music?.src ? music : null
+    // what the music is doing right now: four bands for the meter and a kick envelope (0..1)
+    this.bands = [0, 0, 0, 0]
+    this.kick = 0
+    this.bassAvg = 0
+    this.lastBass = 0
+    this.lastKick = 0
   }
 
   build() {
@@ -59,8 +67,8 @@ export class Sound {
     })
     const sub = ctx.createOscillator()
     sub.frequency.value = 27.5
-    const subG = ctx.createGain()
-    subG.gain.value = 0.05
+    const subG = (this.subGain = ctx.createGain())
+    subG.gain.value = this.music ? 0 : 0.05
     sub.connect(subG).connect(this.master)
     sub.start(now)
     const lfo = ctx.createOscillator()
@@ -118,6 +126,25 @@ export class Sound {
         o.start(now)
       })
     })
+
+    // music: streamed from an <audio> element into its own gain (it is already mastered, so
+    // it skips the compressor) and tapped by an analyser for the beat
+    if (this.music) {
+      const audio = (this.audio = new Audio())
+      audio.src = this.music.src
+      audio.loop = true
+      audio.preload = 'auto'
+      this.musicGain = ctx.createGain()
+      this.musicGain.gain.value = 0
+      this.duck = ctx.createGain()
+      ctx.createMediaElementSource(audio).connect(this.duck).connect(this.musicGain).connect(ctx.destination)
+      this.analyser = ctx.createAnalyser()
+      this.analyser.fftSize = 1024
+      this.analyser.smoothingTimeConstant = 0.55
+      this.duck.connect(this.analyser)
+      this.fdata = new Uint8Array(this.analyser.frequencyBinCount)
+      this.binHz = ctx.sampleRate / this.analyser.fftSize
+    }
     return true
   }
 
@@ -130,6 +157,12 @@ export class Sound {
     this.ctx.resume()
     this.on = true
     this.ramp(this.master.gain, 0.9, 1.2)
+    if (this.audio) {
+      clearTimeout(this.pauseTimer)
+      // play() has to run inside the click that turned the sound on
+      this.audio.play().catch(() => {})
+      this.ramp(this.musicGain.gain, this.music.volume ?? 0.5, 1.5)
+    }
     this.setScene(this.scene, true)
     return true
   }
@@ -137,7 +170,38 @@ export class Sound {
   disable() {
     this.on = false
     if (this.ctx) this.ramp(this.master.gain, 0, 0.5)
+    if (this.audio) {
+      this.ramp(this.musicGain.gain, 0, 0.5)
+      this.pauseTimer = setTimeout(() => !this.on && this.audio.pause(), 900)
+    }
     return false
+  }
+
+  /** Called every frame: the meter's four bands and a kick envelope that jumps on each beat. */
+  analyse() {
+    const playing = this.on && this.audio && !this.audio.paused
+    if (!playing) {
+      this.kick *= 0.85
+      for (let i = 0; i < 4; i++) this.bands[i] *= 0.85
+      return
+    }
+    this.analyser.getByteFrequencyData(this.fdata)
+    const band = (lo, hi) => {
+      const a = Math.max(1, Math.round(lo / this.binHz))
+      const b = Math.max(a + 1, Math.round(hi / this.binHz))
+      let s = 0
+      for (let i = a; i < b; i++) s += this.fdata[i]
+      return s / (b - a) / 255
+    }
+    const bass = band(40, 160)
+    this.bands = [bass, band(160, 900), band(900, 4000), band(4000, 12000)]
+    // a kick: the bass jumps clearly above its recent level, at most every 180 ms
+    const t = this.ctx.currentTime
+    this.bassAvg += (bass - this.bassAvg) * 0.05
+    const hit = bass > this.bassAvg * 1.18 + 0.03 && bass > this.lastBass && t - this.lastKick > 0.18
+    this.lastBass = bass
+    if (hit) this.lastKick = t
+    this.kick = hit ? 1 : this.kick * 0.86
   }
 
   ramp(param, value, time = 0.8) {
@@ -160,10 +224,12 @@ export class Sound {
       portal: { drone: 0.05, cut: 460, murmur: 0, choir: 0.55 },
       contact: { drone: 0.035, cut: 300, murmur: 0, choir: 0.2 },
     }[id] || { drone: 0.05, cut: 400, murmur: 0, choir: 0 }
-    this.ramp(this.droneGain.gain, mood.drone, 2)
+    // with music the tonal layers would clash with its key: the drone goes, the choir whispers
+    const m = this.music ? { drone: 0, murmur: 0.6, choir: 0.25 } : { drone: 1, murmur: 1, choir: 1 }
+    this.ramp(this.droneGain.gain, mood.drone * m.drone, 2)
     this.ramp(this.droneFilter.frequency, mood.cut, 2)
-    this.ramp(this.murmurGain.gain, mood.murmur, 2)
-    this.ramp(this.choirGain.gain, mood.choir, 3)
+    this.ramp(this.murmurGain.gain, mood.murmur * m.murmur, 2)
+    this.ramp(this.choirGain.gain, mood.choir * m.choir, 3)
   }
 
   /** Called every frame with the smoothed scroll velocity. */
@@ -179,6 +245,12 @@ export class Sound {
     if (!this.on || !this.ctx) return
     const ctx = this.ctx
     const t = ctx.currentTime
+    // the music ducks under the impact and swells back
+    if (this.duck) {
+      this.duck.gain.cancelScheduledValues(t)
+      this.duck.gain.setTargetAtTime(0.3, t, 0.02)
+      this.duck.gain.setTargetAtTime(1, t + 0.4, 0.45)
+    }
     const o = ctx.createOscillator()
     o.frequency.setValueAtTime(110, t)
     o.frequency.exponentialRampToValueAtTime(28, t + 1.4)

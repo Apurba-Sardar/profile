@@ -23,9 +23,14 @@ scrubbed by scroll and layered with motion typography in GSAP.
 | **The Portal** | Storm clouds part above mountains, a slit of light opens into a door, lightning crawls out and a hooded developer walks through it towards the camera — then the closing headline. |
 | **Contact** | Availability, a huge gold email, a live clock and a way back to the top. |
 
+The hero name rises letter by letter from behind a mask (a serif italic first name over a heavy grotesk surname),
+the surname swells like a wave on the variable font's width and weight axes (under the mouse, with the phone's tilt,
+or drifting on its own) and the whole name bursts apart in 3D as you scroll into the fall.
+
 Also included: smooth scrolling (Lenis), a `difference`-blend custom cursor, a full-screen chapter menu with previews,
-a generative WebAudio soundtrack (drone, falling wind that follows your scroll speed, crowd murmur, impact boom,
-portal choir — no audio files), a loader and `prefers-reduced-motion` support.
+a soundtrack ("Let Him Cook" by XNIMXS, streamed once you turn the sound on; the surname, the beam and the meter
+in the bar pulse on its kick) layered with generative WebAudio sound (falling wind that follows your scroll speed,
+crowd murmur, impact boom that ducks the music, portal choir), a loader and `prefers-reduced-motion` support.
 
 On phones and tablets: portrait layouts (case titles above the records, cases that scroll in one after another),
 ~44px touch areas on every control, safe-area insets for notches and the home indicator, floating words that stay
@@ -66,6 +71,8 @@ Everything you read on the site lives in **`src/content.js`**:
 - `portal.cta` — the closing headline (`\n` = line break).
 - `contact` — email, socials, availability line, and your city + IANA timezone for the live clock
   (`city: 'Kolkata'`, `timezone: 'Asia/Kolkata'`, `timezoneLabel: 'IST'`).
+- `music` — the soundtrack (`src` in `public/`, `title`, `artist`, `volume`); `null` keeps only the generative sound.
+  Keep the file small (`ffmpeg -i in.mp3 -map_metadata -1 -b:a 128k public/audio/track.mp3`).
 
 Images used by the menu, the index tunnel and the services previews are in `public/media/`.
 Swap in your own screenshots (any aspect ratio, they are cropped with `object-fit: cover`) or re-render
@@ -146,4 +153,5 @@ node tools/render-media.mjs                   # writes public/media/*
 Fonts: [Archivo](https://github.com/Omnibus-Type/Archivo), [Instrument Serif](https://github.com/Instrument/instrument-serif)
 and [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) (SIL Open Font License).
 Libraries: [GSAP](https://gsap.com), [Lenis](https://github.com/darkroomengineering/lenis), [Vite](https://vite.dev).
+Music: "Let Him Cook" by XNIMXS.
 Inspired by a cinematic portfolio concept shared on Instagram by @itsgireesh.uiux.

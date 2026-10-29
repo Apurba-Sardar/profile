@@ -17,6 +17,7 @@ export class Cursor {
     this.ny = 0
     this.snx = 0
     this.sny = 0
+    this.movedAt = -Infinity // seconds (performance.now) of the last mouse move
     if (!this.enabled) {
       this.tilt()
       return
@@ -27,6 +28,7 @@ export class Cursor {
     this.label = this.node.querySelector('.c-label')
 
     window.addEventListener('pointermove', (e) => {
+      this.movedAt = performance.now() / 1000
       this.tx = e.clientX
       this.ty = e.clientY
       this.nx = (e.clientX / window.innerWidth) * 2 - 1

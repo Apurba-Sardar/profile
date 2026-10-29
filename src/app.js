@@ -48,7 +48,7 @@ export class App {
     this.curtain = el('div', { style: { position: 'fixed', inset: '0', background: '#000', zIndex: 90, opacity: 0, pointerEvents: 'none' } })
     document.body.append(this.curtain)
 
-    this.sound = new Sound()
+    this.sound = new Sound(c.music)
     this.cursor = new Cursor()
     this.stage = new Stage()
     const ctx = (this.ctx = {
@@ -58,6 +58,7 @@ export class App {
       sound: this.sound,
       go: (id) => this.go(id),
       copyEmail: () => this.copyEmail(),
+      toggleSound: () => this.toggleSound(),
       reduced: this.reduced,
     })
     this.hud = ctx.hud = new Hud(c, {
@@ -285,6 +286,12 @@ export class App {
   toggleSound() {
     const on = this.sound.toggle()
     this.hud.setSound(on)
+    // credit the track the first time it plays
+    const m = this.content.music
+    if (on && m?.title && !this.credited) {
+      this.credited = true
+      this.toast(`♪ ${m.title}${m.artist ? ' — ' + m.artist : ''}`.toUpperCase())
+    }
   }
 
   copyEmail() {
@@ -327,6 +334,9 @@ export class App {
     const v = this.lenis?.velocity || 0
     this.clients.tick(dt, v)
     this.sound.wind(v)
+    // the music's beat: the meter in the bar shows it, the hero and the beam pulse with it
+    this.sound.analyse()
+    this.hud.setMeter(this.sound.bands)
 
     // optional real footage replaces a procedural scene
     const vids = this.videos

@@ -175,6 +175,15 @@ export const content = {
     again: 'FALL AGAIN',
   },
 
+  // Background music, streamed once the visitor turns the sound on (null = generative sound only).
+  // The visuals pulse on its kick drum.
+  music: {
+    src: 'audio/let-him-cook.mp3',
+    title: 'Let Him Cook',
+    artist: 'XNIMXS',
+    volume: 0.5,
+  },
+
   // Optional: drop real footage in /public/videos and point a scene at it.
   // When a video is set it replaces the procedural WebGL scene and is
   // scrubbed by scroll. Leave as null to use the built-in cinematic shaders.

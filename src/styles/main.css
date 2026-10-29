@@ -664,24 +664,58 @@ main {
   line-height: 1.15;
   color: rgba(241, 238, 232, 0.86);
 }
-.leap-title {
-  /* --fs-line: the whole name on one line; --fs-stack: one word per line (portrait), both set from its length */
-  font-size: var(--fs-line, clamp(54px, 11.4vw, 220px));
-  transform-style: preserve-3d;
+/* the way into the soundtrack; gone once the sound is on */
+.leap-sound {
+  position: relative;
+  margin-top: 16px;
+  transition:
+    opacity 0.5s var(--ease),
+    background 0.35s var(--ease),
+    color 0.35s var(--ease);
 }
-.leap-title .t-inner {
-  display: block;
-  transform: perspective(1100px) rotateY(-17deg) rotateX(-7deg) rotateZ(3deg);
+.is-sound .leap-sound {
+  opacity: 0;
+  pointer-events: none;
+}
+/* hero name: a serif italic first name and a heavy grotesk surname (sized from JS to fit) */
+.leap-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2em;
+  white-space: nowrap;
+  font-size: 100px;
+  line-height: 0.82;
+  color: #fff;
+  text-shadow: 0 0.03em 0.16em rgba(70, 30, 0, 0.32);
 }
 .leap-title .t-word {
-  display: inline-block;
-}
-.leap-title .t-word + .t-word {
-  margin-left: 0.3em;
+  display: block;
+  perspective: 1000px;
 }
 .leap-title .t-ch {
   display: inline-block;
-  transform-origin: 50% 100%;
+  white-space: pre;
+  transform-origin: 50% 80%;
+  will-change: transform;
+}
+.leap-title .is-first {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.16em;
+  letter-spacing: -0.015em;
+  padding-right: 0.06em;
+}
+.leap-title .is-last {
+  font-family: var(--f-display);
+  font-weight: 760;
+  font-stretch: 92%;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+/* while the letters rise they come out from behind a line */
+.leap-title.is-revealing .t-word {
+  clip-path: inset(-0.6em -0.5em -0.28em -0.5em);
 }
 /* scroll cue: a word and a line with light falling down it */
 .leap-cue {
@@ -1382,7 +1416,8 @@ main {
   .socials a::before,
   .contact-email::before,
   .w.pill::before,
-  .case-cta::before {
+  .case-cta::before,
+  .leap-sound::before {
     content: '';
     position: absolute;
     inset: -15px -10px;
@@ -1396,9 +1431,10 @@ main {
   .contact-email::before {
     inset: -10px 0;
   }
-  /* pills that ride the scenes are absolutely positioned, so the area can grow around them */
+  /* pills that ride the scenes are positioned, so the area can grow around them */
   .w.pill::before,
-  .case-cta::before {
+  .case-cta::before,
+  .leap-sound::before {
     inset: -8px -4px;
   }
   /* the corner label clips its two rows, so the rows themselves get taller */
@@ -1421,17 +1457,11 @@ main {
    sides of the record, so it sits above it, and cases follow each other
    ========================================================================== */
 @media (orientation: portrait) {
-  /* the hero name stacks one word per line, much bigger */
+  /* the hero name stacks, first name over surname */
   .leap-title {
-    font-size: var(--fs-stack, var(--fs-line));
-    text-align: center;
-    line-height: 0.92;
-  }
-  .leap-title .t-word {
-    display: block;
-  }
-  .leap-title .t-word + .t-word {
-    margin-left: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.04em;
   }
   .case + .case {
     margin-top: 0;

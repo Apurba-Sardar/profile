@@ -90,6 +90,18 @@ export class Hud {
     this.node.classList.toggle('at-hero', on)
   }
 
+  // the four bars follow the music's bands while it plays (otherwise CSS animates them)
+  setMeter(bands) {
+    const live = bands[0] + bands[1] > 0.02
+    if (!live && !this.metering) return
+    this.metering = live
+    this.bars ??= [...this.soundBtn.querySelectorAll('.bars i')]
+    this.bars.forEach((b, i) => {
+      b.style.animation = live ? 'none' : ''
+      b.style.transform = live ? `scaleY(${(0.2 + Math.min(1, bands[i] * 1.25) * 0.8).toFixed(3)})` : ''
+    })
+  }
+
   setSound(on) {
     document.body.classList.toggle('is-sound', on)
     this.soundLabel.textContent = on ? 'Sound on' : 'Sound off'
