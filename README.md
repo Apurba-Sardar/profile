@@ -41,7 +41,8 @@ npm run preview   # serve the production build
 - **Vercel / Netlify**: import the repo, build command `npm run build`, output directory `dist`.
 - **GitHub Pages** (already set up here): `.github/workflows/deploy.yml` builds the site on every push to `main` or
   `claude/portfolio-motion-graphics-4hs1k6` and publishes `dist/` to the `gh-pages` branch, which Pages serves
-  (Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`). To redeploy by hand: Actions →
+  (Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`), then waits until the live site serves the
+  new build; the run fails if the site can't be reached. To redeploy by hand: Actions →
   *Deploy to GitHub Pages* → *Run workflow*. Paths are relative, so the `/Apu001/` sub-path just works.
 
 ## Make it yours

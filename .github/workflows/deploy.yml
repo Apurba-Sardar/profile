@@ -37,3 +37,18 @@ jobs:
           git add -A
           git commit -q -m "Deploy ${GITHUB_SHA::7} from ${GITHUB_REF_NAME}"
           git push -q -f "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+      # Pages publishes gh-pages in a run of its own, so wait until this build is served.
+      # A custom domain on the account's <owner>.github.io site moves this site under it.
+      - name: Check the live site
+        run: |
+          url="https://${GITHUB_REPOSITORY_OWNER,,}.github.io/${GITHUB_REPOSITORY#*/}/"
+          js=$(grep -o 'assets/index-[^"]*\.js' dist/index.html)
+          for i in $(seq 30); do
+            res=$(curl -sSL -o live.html -w '%{http_code} %{url_effective}' "$url?v=$GITHUB_SHA") \
+              || { echo "::error::Could not load $url (stopped at ${res#* })"; exit 1; }
+            if grep -q "$js" live.html; then echo "Live at ${res#* }"; exit 0; fi
+            echo "Waiting for Pages: HTTP $res"
+            sleep 10
+          done
+          echo "::error::$url is not serving this build after 5 minutes (last: HTTP $res)"
+          exit 1
