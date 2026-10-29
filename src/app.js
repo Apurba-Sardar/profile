@@ -230,13 +230,32 @@ export class App {
         if (window.innerWidth === w && Math.abs(window.innerHeight - h) < 140 && isTouch()) return
         w = window.innerWidth
         h = window.innerHeight
+        // keep the visitor at the same moment of the film: chapter heights scale with the viewport
+        const anchor = this.anchor()
         this.renderer.resize()
         this.stage.measure()
         this.clients.resize()
         ScrollTrigger.refresh()
         this.measureChapters()
+        if (anchor) {
+          const r = anchor.node.getBoundingClientRect()
+          const top = r.top + window.scrollY
+          this.lenis.scrollTo(top + anchor.f * r.height, { immediate: true, force: true })
+        }
       }, 160)
     })
+  }
+
+  /** The section under the current scroll position and how far into it we are. */
+  anchor() {
+    const y = window.scrollY
+    let best = null
+    for (const node of this.main.children) {
+      const r = node.getBoundingClientRect()
+      const top = r.top + y
+      if (y >= top && y < top + r.height) best = { node, f: (y - top) / Math.max(1, r.height) }
+    }
+    return best
   }
 
   go(id) {

@@ -54,7 +54,7 @@ export function createWork(ctx) {
       [...repeated].map((ch) => el('span.ch', { text: ch })),
     )
     const glHole = el('div.gl-hole')
-    const disc = el('div.case-disc', { 'data-cursor': 'PLAY' }, [ring(p.ring, `ring-${i}`), glHole, el('span.hole')])
+    const disc = el('div.case-disc', { 'data-hover': '' }, [ring(p.ring, `ring-${i}`), glHole, el('span.hole')])
     const cta = el('a.pill.ui.case-cta', { href: '#contact', text: w.cta })
     cta.addEventListener('click', (e) => {
       e.preventDefault()
