@@ -85,7 +85,7 @@ export const content = {
         ring: 'WEBNESTLE — WEB AGENCY — WEBSITES & WEB APPS — WEBNESTLE.IN — ',
         description: 'My web agency: websites and web apps for businesses, from the first sketch to launch.',
         meta: ['Founder', 'webnestle.in'],
-        scene: 'leap',
+        scene: 'nest',
       },
       {
         name: 'LOOTDOST',
@@ -96,7 +96,7 @@ export const content = {
         ring: 'LOOTDOST — E-COMMERCE DEAL-FINDING COMMUNITY — LOOTDOST.IN — ',
         description: 'An online community that finds the best e-commerce deals and shares them with its members.',
         meta: ['Founder', 'lootdost.in'],
-        scene: 'ember',
+        scene: 'deals',
       },
     ],
   },

@@ -18,7 +18,7 @@ scrubbed by scroll and layered with motion typography in GSAP.
 | **The Noise** | Top-down crowd around a burning figure; a hollow `NOISE` rises through the frame with the usual noise (*"it works on my machine"*, *"just add AI"*…). A shockwave clears it all. |
 | **Rise** | The letters of `RISE` fly in from every direction and invert the film beneath them. A figure of cold light stands up. |
 | **Index of work** | The film shrinks into a card while project tiles fly towards the camera through a 3D tunnel. |
-| **Selected work** | My two ventures, [Webnestle](https://webnestle.in) and [LootDost](https://lootdost.in). Each takes over from the one before in place: bars grow into its title (a marquee around the record on wide screens, the name fitted above it on tall ones), a spinning "record" (live WebGL) wrapped in rotating ring text spins in with the details and a link to the live site, and it all collapses back into bars before the next case arrives. |
+| **Selected work** | My two ventures, [Webnestle](https://webnestle.in) and [LootDost](https://lootdost.in). Each takes over from the one before in place: bars grow into its title (a marquee around the record on wide screens, the name fitted above it on tall ones) and a record wrapped in rotating ring text spins in, showing what the venture does: for Webnestle a website building itself from wireframe to live inside a nest of golden threads, for LootDost a deal radar that finds price drops and passes each one round its circle of friends. Details and a link to the live site come with it, and it all collapses back into bars before the next case arrives. |
 | **About / Stack / Services** | Word-by-word statement reveal, an outline marquee of the stack, and a services list that floods white on hover with a preview card trailing the cursor. |
 | **The Portal** | Storm clouds part above mountains, a slit of light opens into a door, lightning crawls out and a hooded developer walks through it towards the camera — then the closing headline. |
 | **Contact** | Availability, a huge gold email, a live clock, a way back to the top and the name in outline as a signature. |
@@ -69,9 +69,10 @@ Everything you read on the site lives in **`src/content.js`**:
 
 - `brand` — name, short wordmark, role, intro line, monogram.
 - `leap.words`, `noise.phrases`, `rise.side` — the words that fly past in each chapter.
-- `work.projects` — name, colour, ring text, description, details and which film plays in the record
-  (`leap`, `ember`, `crowd`, `portal`). With a `url`, the record and the button open the live site;
-  without one, the button leads to contact. An optional `year` shows next to the record.
+- `work.projects` — name, colour, ring text, description, details and what plays in the record (`scene`):
+  one of the artworks (`nest`: a website building itself; `deals`: a deal radar), drawn in the project's colour,
+  or one of the films (`leap`, `ember`, `crowd`, `portal`). With a `url`, the record and the button open the live
+  site; without one, the button leads to contact. An optional `year` shows next to the record.
 - `about`, `stack`, `services` — statement, marquee rows, services and their preview images.
 - `portal.cta` — the closing headline (`\n` = line break).
 - `contact` — email, socials, availability line, and your city + IANA timezone for the live clock
@@ -100,7 +101,8 @@ src/
   gl/renderer.js        tiny WebGL2 renderer built around "views" (full-screen, rect or circle)
   gl/shaders/           common.glsl (noise, SDF human), leap.glsl, crowd.glsl, portal.glsl
   scenes/               leap, impact, noise, rise, gallery, portal  (scroll-driven chapters)
-  sections/             work, about, clients (stack), services, contact (normal flow)
+  sections/             work, about, clients (stack), services, contact (normal flow);
+                        ventureArt.js draws the artworks in the work's records (2D canvas)
 tools/                  shader lab, tile designs and the media renderer (dev only)
 ```
 

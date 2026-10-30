@@ -1,6 +1,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { el } from '../lib/util.js'
+import { ARTS, createArt } from './ventureArt.js'
 
 const svgNS = 'http://www.w3.org/2000/svg'
 
@@ -24,7 +25,7 @@ function ring(text, id) {
   return svg
 }
 
-// Which WebGL scene plays inside each record, and how.
+// Which WebGL film plays inside a record (for projects without an artwork of their own), and how.
 function discUniforms(kind, t, mouse) {
   switch (kind) {
     case 'ember':
@@ -55,6 +56,9 @@ export function createWork(ctx) {
       [...repeated].map((ch, k) => el(k < p.name.length ? 'span.ch' : 'span.ch.rep', { text: ch })),
     )
     const glHole = el('div.gl-hole')
+    // the record shows what the venture does (an artwork drawn on a canvas), or one of the films
+    const art = ARTS[p.scene] ? createArt(p.scene, p.color) : null
+    if (art) glHole.append(art.canvas)
     const discParts = [ring(p.ring, `ring-${i}`), glHole, el('span.hole')]
     let disc, cta
     if (p.url) {
@@ -90,7 +94,8 @@ export function createWork(ctx) {
         cta,
       ]),
     ])
-    return { p, node, track, disc, glHole, chars: [...track.children] }
+    if (art) disc.classList.add('has-art')
+    return { p, node, track, disc, glHole, art, chars: [...track.children] }
   })
   const section = el('section.work#work', { 'aria-label': w.heading }, cases.map((c) => c.node))
 
@@ -171,6 +176,11 @@ export function createWork(ctx) {
       for (const c of cases) {
         if (!vis.has(c.glHole)) continue
         const op = Number(gsap.getProperty(c.disc, 'opacity'))
+        if (c.art) {
+          // (with reduced motion it drifts slowly instead)
+          if (op >= 0.01) c.art.draw(ctx.reduced ? t * 0.25 : t, mouse[0], mouse[1])
+          continue
+        }
         const sc = Number(gsap.getProperty(c.disc, 'scale'))
         const rot = Number(gsap.getProperty(c.disc, 'rotate')) || 0
         const size = c.glHole.offsetWidth * sc
