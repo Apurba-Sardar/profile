@@ -102,22 +102,24 @@ export function createRise(ctx) {
       wordBox.y = (wy * vh) / 100
       wordBox.w = wordBox.w0 * ws
       wordBox.h = wordBox.h0 * ws
-      wordBox.o = smoothRange(p, 0.1, 0.3) * (1 - smoothRange(p, 0.86, 0.98))
+      wordBox.o = smoothRange(p, 0.04, 0.16) * (1 - smoothRange(p, 0.86, 0.98))
 
       if (!sized) measure()
-      const cp = range(p, 0.22, 0.95)
-      capBox.y = (lerp(30, -22, easeOut(cp)) * vh) / 100
+      // the caption appears above the word and settles closer as the word recedes, never crossing it
+      const cp = range(p, 0.24, 0.95)
+      const above = wordBox.y - wordBox.h / 2 - capBox.h / 2 - vh * 0.04
+      capBox.y = Math.min(above, (lerp(-14, -20, easeOut(cp)) * vh) / 100)
       capBox.o = window01(cp, 0, 1, 0.14)
       cap.style.transform = `translate(-50%, -50%) translate3d(0, ${capBox.y}px, 0)`
       cap.style.opacity = capBox.o.toFixed(3)
 
-      // the pill keeps clear of the caption, and on phones (no room beside it) of the word too
-      const avoid = vw < 760 ? [capBox, wordBox] : [capBox]
+      // everything around the word arrives once the noise's last line has gone, and steps aside
+      // while it would cross the word or the caption
+      const avoid = [capBox, wordBox]
       for (const s of side) {
         const x = keepInside((s.x * vw) / 100, s.w, vw)
         const y = ((s.y - p * 32 * s.s) * vh) / 100
-        let o = window01(p, 0.0, 0.94, 0.12)
-        if (s.pill) o *= clearOf(x, y, s.w, s.h, avoid)
+        const o = window01(p, 0.06, 0.94, 0.12) * clearOf(x, y, s.w, s.h, avoid)
         s.node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0)`
         s.node.style.opacity = o.toFixed(3)
         if (s.pill) s.node.style.visibility = o < 0.01 ? 'hidden' : 'visible'

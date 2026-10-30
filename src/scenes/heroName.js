@@ -1,7 +1,7 @@
 import gsap from 'gsap'
-import { el, clamp, lerp, range, smooth, smoothRange, expoOut, isTouch } from '../lib/util.js'
+import { el, clamp, lerp, range, smooth, smoothRange, expoOut } from '../lib/util.js'
 
-// steady pseudo-random 0..1 per letter, so the burst looks the same every visit
+// steady pseudo-random 0..1 per letter, so every visit looks the same
 const rand = (i) => {
   const s = Math.sin(i * 12.9898 + 4.1) * 43758.5453
   return s - Math.floor(s)
@@ -11,17 +11,16 @@ const rand = (i) => {
 const REST = { wght: 760, wdth: 92 }
 const PEAK = { wght: 900, wdth: 122 }
 
-// phones: the part of the fall (leap progress) over which the letters fly up into the bar,
-// and the delay between two letters taking off (in that part's progress)
+// the part of the fall (leap progress) over which the letters fly up into the bar, and the delay
+// between two letters taking off (in that part's progress)
 const DOCK = [0.003, 0.085]
 const STAGGER = 0.042
 
 /**
  * The name in the hero: a serif italic first name and a heavy grotesk surname, one span per
  * letter. The letters rise into place and the surname swells like a wave (towards the mouse, with
- * the phone's tilt, or drifting on its own). As the visitor scrolls, falling past it, the name
- * bursts apart in 3D on desktop; on phones and portrait screens the letters take off one after
- * another instead, fly up into the bar and land on the small name there.
+ * the phone's tilt, or drifting on its own). As the visitor scrolls, falling past it, the letters
+ * take off one after another, fly up into the bar and land on the small name there.
  */
 export function createHeroName(ctx, fullName) {
   const [head, ...tail] = fullName.split(' ')
@@ -35,7 +34,7 @@ export function createHeroName(ctx, fullName) {
         const node = el('span.t-ch', { text: ch })
         const i = letters.length
         // at: which character of the full name this is (the space between the names is skipped)
-        letters.push({ node, w, k, i, at: w ? head.length + 1 + k : k, a: rand(i), b: rand(i + 17), cx: 0, cy: 0, wght: 0, wdth: 0, tx: 0, ty: 0, ts: 1 })
+        letters.push({ node, w, k, i, at: w ? head.length + 1 + k : k, a: rand(i), cx: 0, cy: 0, wght: 0, wdth: 0, tx: 0, ty: 0, ts: 1 })
         return node
       }),
     ),
@@ -44,18 +43,14 @@ export function createHeroName(ctx, fullName) {
   const swells = letters.filter((l) => l.w === 1)
   const clock = { t: 0 } // seconds since the name began to appear
 
-  let width = 1 // fitted name, px
   let lastCx = 0 // surname centre and width, px from the name's centre
   let lastW = 1
-  let dock = false // the letters fly into the bar instead of bursting
   const landed = [...fullName].map(() => 1) // per character of the name in the bar: how far its letter has landed
+  const size = { w: 0, h: 0 } // the fitted name, px
 
   return {
     node,
-
-    get docking() {
-      return dock
-    },
+    size,
 
     // fit the name to the screen (in its resting shape) and note where every letter sits
     measure(vw, vh) {
@@ -69,8 +64,8 @@ export function createHeroName(ctx, fullName) {
       // room is left for the surname's swell
       const fs = Math.min(((portrait ? 0.8 : 0.78) * vw * 100) / node.offsetWidth, ((portrait ? 0.3 : 0.34) * vh * 100) / node.offsetHeight)
       node.style.fontSize = fs.toFixed(1) + 'px'
-      width = node.offsetWidth
-      const height = node.offsetHeight
+      const width = (size.w = node.offsetWidth)
+      const height = (size.h = node.offsetHeight)
       for (const l of letters) {
         l.cx = l.node.offsetLeft + l.node.offsetWidth / 2 - width / 2
         l.cy = l.node.offsetTop + l.node.offsetHeight / 2 - height / 2
@@ -82,18 +77,14 @@ export function createHeroName(ctx, fullName) {
         lastCx = first.offsetLeft + lastW / 2 - width / 2
       }
 
-      dock = Boolean(ctx.hud) && (isTouch() || portrait)
-      node.classList.toggle('is-dock', dock)
-      if (dock) {
-        // every letter lands on its own character of the name in the bar, at that size
-        const chars = ctx.hud.nameChars
-        const small = parseFloat(getComputedStyle(chars[0]).fontSize)
-        for (const l of letters) {
-          const r = chars[l.at].getBoundingClientRect()
-          l.tx = r.left + r.width / 2
-          l.ty = r.top + r.height / 2
-          l.ts = small / parseFloat(getComputedStyle(l.node).fontSize)
-        }
+      // every letter lands on its own character of the name in the bar, at that size
+      const chars = ctx.hud.nameChars
+      const small = parseFloat(getComputedStyle(chars[0]).fontSize)
+      for (const l of letters) {
+        const r = chars[l.at].getBoundingClientRect()
+        l.tx = r.left + r.width / 2
+        l.ty = r.top + r.height / 2
+        l.ts = small / parseFloat(getComputedStyle(l.node).fontSize)
       }
     },
 
@@ -103,9 +94,9 @@ export function createHeroName(ctx, fullName) {
       else gsap.to(clock, { t: 10, duration: 10, ease: 'none', delay })
     },
 
-    // how far each character of the bar's name has been landed on (phones), or null
+    // how far each character of the bar's name has been landed on (0..1)
     dock() {
-      return dock ? landed : null
+      return landed
     },
 
     // beat: the music's kick envelope (0..1), which makes the whole surname thump
@@ -113,15 +104,14 @@ export function createHeroName(ctx, fullName) {
     update(p, vw, vh, beat = 0, at = { x: vw / 2, y: vh / 2 }) {
       const t = clock.t
       const now = performance.now() / 1000
-      const burst = ctx.reduced ? 0 : smoothRange(p, 0.004, 0.07)
       const settled = smoothRange(t, 1.5, 2.6)
       // the line the letters rise from goes as soon as they start to leave
       node.classList.toggle('is-revealing', t < 2.4 && p < 0.003)
       // the swell gives way as the name leaves
-      const calm = dock ? 1 - smoothRange(p, 0.002, 0.02) : 1 - burst
+      const calm = 1 - smoothRange(p, 0.002, 0.02)
       const e = range(p, DOCK[0], DOCK[1])
       const flight = 1 - (letters.length - 1) * STAGGER
-      if (dock) landed.fill(1)
+      landed.fill(1)
 
       // where the surname swells: under the mouse, or drifting by itself (tilting a phone steers it)
       const cur = ctx.cursor
@@ -132,30 +122,18 @@ export function createHeroName(ctx, fullName) {
         const li = expoOut(clamp((t - l.w * 0.28 - l.k * 0.065) / 1.25))
         const rise = (1 - li) * 160
         const lean = l.w ? 0 : (1 - li) * 14
-        if (dock) {
-          // take off in reading order and fly up into the bar (up first, then across), shrinking
-          // to the small name's size with a little spin on the way, and land on its character
-          const q = ctx.reduced ? 0 : clamp((e - l.i * STAGGER) / flight)
-          const k = smooth(q)
-          const x = (l.tx - at.x - l.cx) * Math.pow(k, 1.7)
-          const y = (l.ty - at.y - l.cy) * k
-          const s = Math.pow(l.ts, k)
-          const rz = Math.sin(q * Math.PI) * (l.a - 0.5) * 60 + lean
-          l.node.style.transform = `translateY(${rise.toFixed(1)}%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${rz.toFixed(2)}deg) scale(${s.toFixed(4)})`
-          const land = ctx.reduced ? smoothRange(p, 0.02, 0.05) : smoothRange(q, 0.8, 1)
-          l.node.style.opacity = (1 - land).toFixed(3)
-          landed[l.at] = land
-        } else {
-          // burst: out from the centre, up, towards the viewer, tumbling
-          const dir = l.cx / (width / 2)
-          const x = (dir * 0.42 + (l.a - 0.5) * 0.12) * burst * vw
-          const y = -(0.16 + l.b * 0.42) * burst * vh
-          const z = (160 + l.a * 520) * burst
-          const rx = (l.a - 0.5) * 80 * burst
-          const rz = (l.b - 0.5) * 100 * burst + lean
-          l.node.style.transform = `translateY(${rise.toFixed(1)}%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateX(${rx.toFixed(1)}deg) rotate(${rz.toFixed(2)}deg)`
-          l.node.style.opacity = (1 - smoothRange(p, 0.03 + l.a * 0.025, 0.075)).toFixed(3)
-        }
+        // take off in reading order and fly up into the bar (up first, then across), shrinking to
+        // the small name's size with a little spin on the way, and land on its character
+        const q = ctx.reduced ? 0 : clamp((e - l.i * STAGGER) / flight)
+        const k = smooth(q)
+        const x = (l.tx - at.x - l.cx) * Math.pow(k, 1.7)
+        const y = (l.ty - at.y - l.cy) * k
+        const s = Math.pow(l.ts, k)
+        const rz = Math.sin(q * Math.PI) * (l.a - 0.5) * 60 + lean
+        l.node.style.transform = `translateY(${rise.toFixed(1)}%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) rotate(${rz.toFixed(2)}deg) scale(${s.toFixed(4)})`
+        const land = ctx.reduced ? smoothRange(p, 0.02, 0.05) : smoothRange(q, 0.8, 1)
+        l.node.style.opacity = (1 - land).toFixed(3)
+        landed[l.at] = land
 
         if (l.w === 1 && !ctx.reduced) {
           // grows from thin and narrow while it rises, then swells near the focus

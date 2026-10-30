@@ -53,6 +53,7 @@ export class Hud {
       onIndex(0)
     })
     this.current = content.sections[0].label
+    this.bars = { top: 0, bottom: window.innerHeight }
     this.lastAlt = -1
     this.showIndex = false
   }
@@ -85,15 +86,8 @@ export class Hud {
     }
   }
 
-  // the big name is on screen over the hero, so the bar's copy steps aside until it falls away
-  setHero(on) {
-    if (on === this.hero) return
-    this.hero = on
-    this.node.classList.toggle('at-hero', on)
-  }
-
-  // phones: how far each hero letter has landed on its character of the name (0..1); the dot and
-  // the role follow once the name is complete. null: the name is simply there.
+  // how far each hero letter has landed on its character of the name (0..1); the dot and the role
+  // follow once the name is complete. null: the name is simply there.
   setDock(v) {
     if (!v) {
       if (!this.docking) return
@@ -113,8 +107,11 @@ export class Hud {
   }
 
   // where the bar's two rows end (px from the top), so things moving on screen can keep clear of them
-  edges() {
-    return { top: this.top.getBoundingClientRect().bottom, bottom: this.bottom.getBoundingClientRect().top }
+  measure() {
+    this.bars = { top: this.top.getBoundingClientRect().bottom, bottom: this.bottom.getBoundingClientRect().top }
+    const root = document.documentElement.style
+    root.setProperty('--bar-top', this.bars.top.toFixed(1) + 'px')
+    root.setProperty('--bar-bottom', (window.innerHeight - this.bars.bottom).toFixed(1) + 'px')
   }
 
   // the four bars follow the music's bands while it plays (otherwise CSS animates them)

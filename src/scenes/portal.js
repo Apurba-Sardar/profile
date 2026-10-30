@@ -15,13 +15,16 @@ export function createPortal(ctx) {
   const lines = c.cta.split('\n')
   const lineNodes = lines.map((t) => el('span', { text: t }))
   const head = el('h2.abs.display.cta-head', { 'aria-hidden': 'true' }, lineNodes.map((s) => el('span.ln', {}, [s])))
-  const diffLayer = el('div.layer.is-diff', {}, [...caps, head])
+  const diffLayer = el('div.layer.is-diff', {}, caps)
+  // the end card: the film dims behind the headline so it reads crisp on the bright door
+  const scrim = el('div.cta-scrim', { 'aria-hidden': 'true' })
 
   const write = el('a.pill.is-light.is-big.ui.hit', { href: `mailto:${content.contact.email}`, text: c.primary })
   const copy = el('button.pill.is-ghost.is-big.ui.hit', { type: 'button', text: c.secondary })
   copy.addEventListener('click', copyEmail)
   const btns = el('div.cta-btns', {}, [write, copy])
-  const btnLayer = el('div.layer', {}, [btns])
+  const scrimLayer = el('div.layer.is-full', {}, [scrim])
+  const btnLayer = el('div.layer', {}, [head, btns])
 
   let vw = window.innerWidth
   let vh = window.innerHeight
@@ -34,7 +37,7 @@ export function createPortal(ctx) {
   const scene = {
     id: 'portal',
     section,
-    layers: [diffLayer, btnLayer],
+    layers: [diffLayer, scrimLayer, btnLayer],
     vh: 800,
     chain: false,
     resize(w, h) {
@@ -55,6 +58,7 @@ export function createPortal(ctx) {
       })
       head.style.transform = `translate(-50%, -58%) scale(${lerp(1.06, 1, easeOut(h))})`
       head.style.opacity = h > 0 ? '1' : '0'
+      scrim.style.opacity = smoothRange(p, 0.8, 0.9).toFixed(3)
       const b = easeOut(range(p, 0.89, 0.95))
       btns.style.transform = `translate(-50%, 0) translate3d(0, ${(1 - b) * 30 + vh * 0.2}px, 0)`
       btns.style.opacity = b.toFixed(3)

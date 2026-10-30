@@ -5,7 +5,7 @@ export function createImpact(ctx) {
   const { content } = ctx
   const section = el('section.scene#impact', { 'aria-label': 'Impact' }, [el('h2.sr-only', { text: content.impact })])
   const bg = el('div.impact-bg')
-  const bgLayer = el('div.layer', {}, [bg])
+  const bgLayer = el('div.layer.is-full', {}, [bg])
   const word = el('div.abs.display.impact-word', { text: content.impact, 'aria-hidden': 'true' })
   const wordLayer = el('div.layer', {}, [word])
   let hit = false

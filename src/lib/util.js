@@ -35,6 +35,13 @@ export function clearOf(x, y, w, h, boxes, soft = 40) {
   }
   return k
 }
+/**
+ * Opacity factor that fades a box (its centre y and half its height, px from the top of the screen)
+ * before it reaches the bar's rows (bars: { top, bottom }, px), so nothing runs underneath them.
+ */
+export const clearOfBars = (y, hh, bars, soft = 36) =>
+  smoothRange(y - hh, bars.top, bars.top + soft) * (1 - smoothRange(y + hh, bars.bottom - soft, bars.bottom))
+
 /** Size of the text inside a block (its widest line by all its lines). */
 export function textSize(node) {
   const r = document.createRange()

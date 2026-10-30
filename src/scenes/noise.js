@@ -1,4 +1,4 @@
-import { el, lerp, range, smoothRange, window01, clamp, easeOut, keepInside } from '../lib/util.js'
+import { el, lerp, range, smoothRange, window01, clamp, easeOut, keepInside, clearOfBars } from '../lib/util.js'
 
 // Positions of the "noise" (client clichés) in vw / vh from centre.
 const PHRASES = [
@@ -51,9 +51,14 @@ export function createNoise(ctx) {
     },
     update(p) {
       if (!sized) {
-        for (const b of bits) b.w = b.node.offsetWidth
+        for (const b of bits) {
+          b.w = b.node.offsetWidth
+          b.h = b.node.offsetHeight
+        }
+        for (const c of caps) c.h = c.offsetHeight
         sized = true
       }
+      const bars = ctx.hud.bars
       const ex = smoothRange(p, 0.55, 0.64) // the shockwave scatters the noise
 
       // NOISE outline rising through the frame
@@ -65,7 +70,8 @@ export function createNoise(ctx) {
       for (const b of bits) {
         const y = b.y - range(p, 0, 0.62) * 70 * b.s
         const sx = 1 + ex * 0.7
-        const o = window01(p, 0.03, 0.62, 0.12) * (1 - ex)
+        // they drift up the screen and fade before they reach the bar
+        const o = window01(p, 0.03, 0.62, 0.12) * (1 - ex) * clearOfBars(vh / 2 + (y * sx * vh) / 100, b.h / 2, bars)
         // on screen until the shockwave throws them outwards
         const x = keepInside((b.x * vw) / 100, b.w, vw) * sx
         b.node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${(y * sx * vh) / 100}px, 0) rotate(${b.r || 0}deg) scale(${1 + ex * 0.6})`
@@ -75,8 +81,9 @@ export function createNoise(ctx) {
 
       // captions
       const c0 = range(p, 0.0, 0.47)
-      caps[0].style.transform = `translate(-50%, -50%) translate3d(0, ${(lerp(31, -30, c0) * vh) / 100}px, 0)`
-      caps[0].style.opacity = (window01(c0, 0, 1, 0.16) * (1 - ex)).toFixed(3)
+      const y0 = (lerp(31, -30, c0) * vh) / 100
+      caps[0].style.transform = `translate(-50%, -50%) translate3d(0, ${y0}px, 0)`
+      caps[0].style.opacity = (window01(c0, 0, 1, 0.16) * (1 - ex) * clearOfBars(vh / 2 + y0, caps[0].h / 2, bars)).toFixed(3)
       const c1 = range(p, 0.66, 1.0)
       caps[1].style.transform = `translate(-50%, -50%) translate3d(0, ${(lerp(30, 2, easeOut(c1)) * vh) / 100}px, 0)`
       caps[1].style.opacity = smoothRange(c1, 0, 0.18).toFixed(3)

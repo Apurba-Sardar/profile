@@ -94,75 +94,23 @@ export function createWork(ctx) {
   })
   const section = el('section.work#work', { 'aria-label': w.heading }, cases.map((c) => c.node))
 
-  // landscape: the cases scroll by, overlapping a little; the title runs as a marquee
-  const sliding = (c) => {
-    gsap.fromTo(
-      c.track,
-      { xPercent: 4 },
-      { xPercent: -24, ease: 'none', scrollTrigger: { trigger: c.node, start: 'top bottom', end: 'bottom top', scrub: true } },
-    )
-    // letters grow out of bars as the case arrives...
-    gsap.fromTo(
-      c.chars,
-      { scaleY: 0.04 },
-      {
-        scaleY: 1,
-        ease: 'power3.out',
-        stagger: { each: 0.008, from: 'center' },
-        scrollTrigger: { trigger: c.node, start: 'top 95%', end: 'top 20%', scrub: true },
-      },
-    )
-    // ...and collapse back into bars as it leaves
-    gsap.to(c.chars, {
-      scaleY: 0.04,
-      ease: 'power3.in',
-      stagger: { each: 0.008, from: 'edges' },
-      scrollTrigger: { trigger: c.node, start: 'bottom 72%', end: 'bottom 12%', scrub: true },
-    })
-    // (autoAlpha: what has faded can't be clicked through the case that follows)
-    gsap.fromTo(
-      c.disc,
-      { scale: 0.55, rotate: -40, autoAlpha: 0 },
-      {
-        scale: 1,
-        rotate: 0,
-        autoAlpha: 1,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: c.node, start: 'top 90%', end: 'top 25%', scrub: true },
-      },
-    )
-    gsap.to(c.disc, {
-      scale: 0.7,
-      autoAlpha: 0,
-      ease: 'power2.in',
-      scrollTrigger: { trigger: c.node, start: 'bottom 60%', end: 'bottom 10%', scrub: true },
-    })
-    const fades = c.node.querySelectorAll('.case-info, .case-cta, .case-year, .case-top')
-    gsap.fromTo(
-      fades,
-      { autoAlpha: 0, y: 30 },
-      { autoAlpha: 1, y: 0, stagger: 0.05, scrollTrigger: { trigger: c.node, start: 'top 60%', end: 'top 10%', scrub: true } },
-    )
-    const leaving = c.node.querySelectorAll('.case-info, .case-cta, .case-year')
-    gsap.to(leaving, { autoAlpha: 0, y: -30, scrollTrigger: { trigger: c.node, start: 'bottom 70%', end: 'bottom 30%', scrub: true } })
-    // the labels at the top would slide under the bar first, so they go as soon as the case starts to leave
-    const labels = c.node.querySelector('.case-top')
-    gsap.to(labels, { autoAlpha: 0, scrollTrigger: { trigger: c.node, start: 'bottom bottom', end: 'bottom 95%', scrub: true } })
-  }
+  const portrait = window.matchMedia('(orientation: portrait)')
 
-  // portrait: the work takes over in place from the index of work, and every case from the one
-  // before it (see the CSS). One timeline runs over the scroll a case is pinned for: it arrives
-  // once pinned (bars grow into its name, the record spins in, the rest fades up) and has left
-  // before it moves on, so nothing slides past the bars. The title is the name once.
+  // The work takes over in place from the index of work, and every case from the one before it
+  // (see the CSS). One timeline runs over the scroll a case is pinned for: it arrives once pinned
+  // (bars grow into its name, the record spins in, the rest fades up) and has left before it moves
+  // on, so nothing slides past the bars. Landscape screens run the title as a marquee around the
+  // record; portrait screens show the name once, fitted above it.
   const IN = 0.18 // of that scroll, while a case arrives (and again while it leaves)
   const BAR = 0.03 // the bars appear before they grow, and go once they have collapsed
   const inPlace = (c) => {
-    const title = c.chars.slice(0, c.p.name.length)
+    const tall = portrait.matches
+    const title = tall ? c.chars.slice(0, c.p.name.length) : c.chars
     const box = c.track.parentNode
     const parts = c.node.querySelectorAll('.case-top, .case-year, .case-info, .case-cta')
     const morph = (from) => ({ duration: (IN - BAR) * 0.6, stagger: { amount: (IN - BAR) * 0.4, from } })
     const out = 1 - IN
-    gsap
+    const tl = gsap
       .timeline({ scrollTrigger: { trigger: c.node, start: 'top top', end: 'bottom bottom', scrub: true } })
       .fromTo(box, { autoAlpha: 0 }, { autoAlpha: 1, duration: BAR, ease: 'none' }, 0)
       .fromTo(title, { scaleY: 0.04 }, { scaleY: 1, ease: 'power3.out', ...morph('center') }, BAR)
@@ -173,10 +121,11 @@ export function createWork(ctx) {
       .fromTo(c.disc, { scale: 1, autoAlpha: 1 }, { scale: 0.7, autoAlpha: 0, duration: IN, ease: 'power2.in', immediateRender: false }, out)
       .fromTo(parts, { autoAlpha: 1, y: 0 }, { autoAlpha: 0, y: -24, duration: IN * 0.7, immediateRender: false }, out)
       .fromTo(box, { autoAlpha: 1 }, { autoAlpha: 0, duration: BAR, ease: 'none', immediateRender: false }, 1 - BAR)
+    // the marquee drifts the whole time the case is on screen
+    if (!tall) tl.fromTo(c.track, { xPercent: 2 }, { xPercent: -12, duration: 1, ease: 'none' }, 0)
   }
 
   // portrait: the title is as wide as the screen allows (and no taller than the room above the record)
-  const portrait = window.matchMedia('(orientation: portrait)')
   const fit = () => {
     for (const c of cases) {
       c.track.style.fontSize = ''
@@ -193,7 +142,7 @@ export function createWork(ctx) {
   const build = () => {
     motion?.revert()
     fit()
-    motion = gsap.context(() => cases.forEach(portrait.matches ? inPlace : sliding))
+    motion = gsap.context(() => cases.forEach(inPlace))
   }
   const setup = () => {
     build()
@@ -214,7 +163,7 @@ export function createWork(ctx) {
     section,
     setup,
     // how far past the top of the section the first case is complete (where the menu lands)
-    landing: () => (portrait.matches ? (cases[0].node.offsetHeight - window.innerHeight) * (IN + 0.02) : 0),
+    landing: () => (cases[0].node.offsetHeight - window.innerHeight) * (IN + 0.02),
     render(r, t) {
       if (!vis.size) return false
       const mouse = [ctx.cursor.snx, ctx.cursor.sny]

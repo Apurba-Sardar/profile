@@ -9,6 +9,13 @@ export function createContact(ctx) {
   again.addEventListener('click', () => ctx.go('leap'))
   // --chars lets the CSS shrink a long address until it fits on one line
   const email = el('a.contact-email', { href: `mailto:${c.email}`, text: c.email, style: { '--chars': c.email.length } })
+  // the name across the bottom of the page, one span per letter so it can rise in
+  const name = ctx.content.brand.name
+  const mark = el(
+    'div.contact-mark.display',
+    { 'aria-hidden': 'true', style: { '--chars': name.length } },
+    [...name].map((ch) => el('span', { text: ch })),
+  )
   const section = el('section.contact#contact', { 'aria-label': 'Contact' }, [
     el('h2.sr-only', { text: 'Contact' }),
     el('p.contact-avail.serif', { text: c.availability }),
@@ -23,6 +30,7 @@ export function createContact(ctx) {
       again,
     ]),
     el('p.copyright.ui', { text: `© ${ctx.content.brand.year} ${ctx.content.brand.name}. ALL RIGHTS RESERVED` }),
+    mark,
   ])
 
   const fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: c.timezone })
@@ -42,6 +50,17 @@ export function createContact(ctx) {
           filter: 'blur(0px)',
           ease: 'power3.out',
           scrollTrigger: { trigger: section, start: 'top 80%', end: 'top 20%', scrub: true },
+        },
+      )
+      gsap.fromTo(
+        mark.children,
+        { yPercent: 60, opacity: 0 },
+        {
+          yPercent: 0,
+          opacity: 1,
+          ease: 'power3.out',
+          stagger: 0.04,
+          scrollTrigger: { trigger: section, start: 'top 60%', end: 'top top', scrub: true },
         },
       )
       gsap.fromTo(

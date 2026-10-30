@@ -8,6 +8,9 @@
   --ink: #050506;
   --paper: #f1eee8;
   --muted: rgba(241, 238, 232, 0.55);
+  /* how far the bar's top and bottom rows reach in from the edges (measured by the bar) */
+  --bar-top: 48px;
+  --bar-bottom: 48px;
   --faint: rgba(241, 238, 232, 0.16);
   --gold: #e3b448;
   --amber: #f2c53d;
@@ -263,6 +266,17 @@ main {
 .layer.is-back {
   z-index: 0;
 }
+/* what moves on the scenes fades out before it reaches the bar's rows (--bar-top / --bar-bottom:
+   how far the rows reach in from each edge; the stage holds the fade in place as a scene leaves) */
+.layer.is-clear {
+  --edge: min(56px, 7vh);
+  -webkit-mask-image: linear-gradient(transparent var(--bar-top), #000 calc(var(--bar-top) + var(--edge)), #000 calc(100% - var(--bar-bottom) - var(--edge)), transparent calc(100% - var(--bar-bottom)));
+  mask-image: linear-gradient(transparent var(--bar-top), #000 calc(var(--bar-top) + var(--edge)), #000 calc(100% - var(--bar-bottom) - var(--edge)), transparent calc(100% - var(--bar-bottom)));
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
 .layer .hit {
   pointer-events: auto;
 }
@@ -387,11 +401,6 @@ main {
   gap: 8px;
   transition: opacity 0.6s var(--ease);
 }
-/* over the hero the big name is already on screen */
-#hud.at-hero .hud-brand {
-  opacity: 0;
-  pointer-events: none;
-}
 .hud-brand .dot {
   width: 5px;
   height: 5px;
@@ -402,7 +411,7 @@ main {
 .hud-brand .role {
   opacity: 0.55;
 }
-/* on phones the name builds up as the hero's letters land on it; the dot and the role follow */
+/* the name builds up as the hero's letters land on it; the dot and the role follow */
 .hud-brand .dot,
 .hud-brand .role {
   filter: opacity(var(--rest, 1));
@@ -580,6 +589,34 @@ main {
   transform: scale(0.8);
 }
 
+/* on the page sections (about, stack, services, contact) text fades into the black before it runs
+   under either row of the bar (the app turns each edge on while a page section is under it) */
+.page-scrim::before,
+.page-scrim::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.page-scrim::before {
+  top: 0;
+  height: calc(var(--bar-top) + 56px);
+  background: linear-gradient(var(--ink) var(--bar-top), transparent);
+}
+.page-scrim::after {
+  bottom: 0;
+  height: calc(var(--bar-bottom) + 22px);
+  background: linear-gradient(to top, var(--ink) calc(var(--bar-bottom) - 4px), transparent);
+}
+body.scrim-top .page-scrim::before,
+body.scrim-bottom .page-scrim::after {
+  opacity: 1;
+}
+
 /* ==========================================================================
    Menu overlay
    ========================================================================== */
@@ -613,22 +650,36 @@ main {
 }
 .menu-list a {
   display: flex;
-  align-items: center;
-  gap: 0.35em;
+  align-items: flex-start;
+  gap: 0.9em;
+  padding: 0.03em 0;
   font-size: clamp(30px, 4.3vw, 70px);
   color: #8b8f98;
   transform-origin: left center;
   transition: color 0.35s var(--ease);
 }
-.menu-list a .dash {
-  font-size: 0.4em;
-  opacity: 0.8;
+/* chapter numbers sit at the cap height, like an index */
+.menu-list a .num {
+  min-width: 2.4em;
+  margin-top: 0.55em;
+  font-size: 10.5px;
+  color: var(--muted);
+  transition: color 0.35s var(--ease);
+}
+.menu-list a .label {
+  transition: transform 0.6s var(--ease);
+}
+.menu-list a:hover .label {
+  transform: translateX(0.12em);
 }
 .menu-list a:hover,
-.menu-list a.is-current {
+.menu-list a.is-current,
+.menu-list a:hover .num,
+.menu-list a.is-current .num {
   color: var(--gold);
 }
-.menu-list:hover a.is-current:not(:hover) {
+.menu-list:hover a.is-current:not(:hover),
+.menu-list:hover a.is-current:not(:hover) .num {
   color: #8b8f98;
 }
 .menu-preview {
@@ -705,7 +756,6 @@ main {
 .leap-title .t-ch {
   display: inline-block;
   white-space: pre;
-  transform-origin: 50% 80%;
   will-change: transform;
 }
 .leap-title .is-first {
@@ -722,10 +772,6 @@ main {
   font-stretch: 92%;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-}
-/* on phones the letters fly up into the bar, shrinking and spinning around their centres */
-.leap-title.is-dock .t-ch {
-  transform-origin: 50% 50%;
 }
 /* while the letters rise they come out from behind a line */
 .leap-title.is-revealing .t-word {
@@ -824,6 +870,7 @@ main {
   top: 50%;
   width: min(88vw, 1100px);
   text-align: center;
+  text-wrap: balance;
   font-family: var(--f-serif);
   font-style: italic;
   font-size: clamp(24px, 2.75vw, 52px);
@@ -966,19 +1013,24 @@ main {
 /* ==========================================================================
    WORK
    ========================================================================== */
+/* the work takes over in place from the index of work, and each case from the one before: a case
+   is pinned for a screen of scroll and work.js shows its content only while it is */
 .work {
   position: relative;
   background: transparent;
+  margin-top: -100vh;
+  margin-top: -100svh;
 }
 .case {
   position: relative;
-  height: 175vh;
+  height: 200vh;
   --c: var(--gold);
   /* cases overlap while they hand over, so only the record and the button take clicks */
   pointer-events: none;
 }
 .case + .case {
-  margin-top: -40vh;
+  margin-top: -100vh;
+  margin-top: -100svh;
 }
 .case-pin {
   position: sticky;
@@ -1096,6 +1148,7 @@ main {
 .case-info .desc {
   font-size: clamp(15px, 1.15vw, 19px);
   line-height: 1.22;
+  text-wrap: pretty;
   color: rgba(241, 238, 232, 0.88);
 }
 .case-info .meta {
@@ -1135,6 +1188,7 @@ main {
 .about-statement {
   font-size: clamp(30px, 4.6vw, 88px);
   line-height: 1.02;
+  text-wrap: pretty;
   letter-spacing: -0.012em;
   max-width: 17.5em;
   margin-left: 6.5vw;
@@ -1250,6 +1304,7 @@ main {
 .service p {
   font-size: clamp(14px, 1.15vw, 19px);
   line-height: 1.25;
+  text-wrap: pretty;
   max-width: 34em;
   color: rgba(241, 238, 232, 0.86);
   transition: color 0.35s var(--ease);
@@ -1295,6 +1350,13 @@ main {
   width: min(92vw, 13em);
   line-height: 0.92;
   color: #fff;
+  text-shadow: 0 0.04em 0.4em rgba(20, 4, 6, 0.35);
+}
+.cta-scrim {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 46%, rgba(10, 3, 5, 0.74), rgba(10, 3, 5, 0.42) 55%, rgba(10, 3, 5, 0.16));
 }
 .cta-head .ln {
   display: block;
@@ -1397,6 +1459,20 @@ main {
   color: var(--muted);
   margin-top: 1.5vh;
 }
+/* the signature: the name in outline across the full width, closing the page */
+.contact-mark {
+  /* .display runs ~0.9em per letter, so it spans the column */
+  font-size: calc((100vw - 2 * var(--gutter)) / (var(--chars, 13) * 0.9));
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(241, 238, 232, 0.2);
+  margin-top: 1vh;
+  user-select: none;
+}
+.contact-mark span {
+  display: inline-block;
+  white-space: pre;
+}
 .toast {
   position: fixed;
   left: 50%;
@@ -1483,19 +1559,6 @@ main {
     align-items: center;
     gap: 0.04em;
   }
-  /* the work takes over in place from the index of work, and each case from the one before
-     (a case is pinned for a screen of scroll; work.js shows its content only while it is) */
-  .work {
-    margin-top: -100vh;
-    margin-top: -100svh;
-  }
-  .case {
-    height: 200vh;
-  }
-  .case + .case {
-    margin-top: -100vh;
-    margin-top: -100svh;
-  }
   .case-pin {
     --disc: min(30vh, 60vw);
     --mid: 43%;
@@ -1571,6 +1634,11 @@ main {
   }
   .menu-inner {
     grid-template-columns: 1fr;
+  }
+  /* the longest chapter ("SELECTED WORK") fits beside its number */
+  .menu-list a {
+    gap: 0.6em;
+    font-size: min(30px, 6.6vw);
   }
   .menu-preview {
     display: none;

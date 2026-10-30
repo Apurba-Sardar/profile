@@ -1,5 +1,5 @@
 import gsap from 'gsap'
-import { el, lerp, range, smoothRange, window01, wrap, expoOut, clamp, keepInside, clearOf, textSize } from '../lib/util.js'
+import { el, lerp, range, smoothRange, window01, wrap, expoOut, clamp, keepInside, clearOf, clearOfBars, textSize } from '../lib/util.js'
 import { createHeroName } from './heroName.js'
 
 // font-size (vw) so a word of this length fits inside maxW (vw)
@@ -92,16 +92,13 @@ export function createLeap(ctx) {
   let vh = window.innerHeight
   let introT = 0 // 0..1 hero intro animation (set by app after loading)
   const cueIn = { v: 0 } // the scroll cue arrives once the letters have landed
-  // where the name rests, in vh below the centre: under the falling figure on portrait screens
-  const restY = (w, h) => (h > w ? 17 : 6)
+  // where the name rests, in vh below the centre: under the falling figure
+  const restY = (w, h) => (h > w ? 17 : 15)
   let titleY = restY(vw, vh)
 
   // sizes of the words (their rotated bounds) and of the caption text, measured on screen
   const capBox = caps.map(() => ({ x: 0, y: 0, w: 0, h: 0, o: 0 }))
   let sized = false
-  // phones and portrait screens: the bar is close to everything, so the words keep clear of it
-  let compact = false
-  let bars = { top: 0, bottom: 0 }
   const measure = () => {
     for (const w of words) {
       const a = ((w.rot || 0) * Math.PI) / 180
@@ -112,8 +109,6 @@ export function createLeap(ctx) {
     }
     caps.forEach((cap, i) => Object.assign(capBox[i], textSize(cap)))
     hero.measure(vw, vh)
-    compact = hero.docking
-    bars = ctx.hud.edges()
     sized = true
   }
 
@@ -123,6 +118,8 @@ export function createLeap(ctx) {
     layers: [heroLayer, fieldLayer, capLayer],
     vh: 640,
     chain: false,
+    // the name lands in the bar and the words and captions keep clear of it themselves
+    clear: false,
     p: 0,
     resize(w, h) {
       vw = w
@@ -139,7 +136,7 @@ export function createLeap(ctx) {
       hero.start(delay)
       gsap.to(cueIn, { v: 1, duration: 0.9, delay: delay + 2, ease: 'power2.out' })
     },
-    // phones: the hero's letters land on the bar's name one by one (null elsewhere)
+    // how far the hero's letters have landed on the bar's name, one by one
     dock: () => hero.dock(),
     update(p) {
       scene.p = p
@@ -147,14 +144,13 @@ export function createLeap(ctx) {
       const mx = ctx.cursor.snx
       const my = ctx.cursor.sny
 
-      // hero name: rises in, then bursts apart as we fall past it, or on phones flies up into the
-      // bar (the letters move in heroName)
+      // hero name: rises in, then flies up into the bar as we fall past it (the letters move in heroName)
       const tp = smoothRange(p, 0, 0.075)
       const ti = expoOut(introT)
       const ty = (titleY * vh) / 100 - tp * vh * 0.22
       // it turns slightly towards the mouse (or the way the phone tilts); letters on their way to
-      // the bar need a steady name to leave from, so there it settles as the scroll starts
-      const lean = hero.docking ? 1 - smoothRange(p, 0, 0.02) : 1
+      // the bar need a steady name to leave from, so it settles as the scroll starts
+      const lean = 1 - smoothRange(p, 0, 0.02)
       const ox = mx * -8 * lean
       const oy = ty + my * 6 * lean
       const turn = `perspective(1000px) rotateX(${(my * 5 * lean).toFixed(2)}deg) rotateY(${(mx * 7 * lean).toFixed(2)}deg)`
@@ -172,15 +168,19 @@ export function createLeap(ctx) {
         const lp = range(p, a, b)
         const last = i === CAPW.length - 1
         const yv = last ? lerp(38, -40, Math.pow(lp, 0.85)) : lerp(36, -36, lp)
-        const o = last ? smoothRange(lp, 0, 0.12) * (1 - smoothRange(p, 0.985, 1)) : window01(lp, 0, 1, 0.2)
         capBox[i].y = (yv * vh) / 100
+        const o =
+          (last ? smoothRange(lp, 0, 0.12) * (1 - smoothRange(p, 0.985, 1)) : window01(lp, 0, 1, 0.2)) *
+          clearOfBars(vh / 2 + capBox[i].y, capBox[i].h / 2, ctx.hud.bars)
         capBox[i].o = o
         cap.style.transform = `translate(-50%, -50%) translate3d(0, ${capBox[i].y}px, 0)`
         cap.style.opacity = o.toFixed(3)
       })
 
-      // word field
-      const fin = smoothRange(p, 0.012, 0.055)
+      // word field: it comes in once the name has flown up into the bar, and until then the blurred
+      // words in the distance keep clear of the name
+      const fin = smoothRange(p, 0.045, 0.09)
+      const nameBox = { x: ox, y: oy, w: hero.size.w, h: hero.size.h, o: 1 - smoothRange(p, 0.02, 0.045) }
       const fout = 1 - smoothRange(p, 0.8, 0.9)
       const sway = ctx.reduced ? 0 : Math.sin(p * 9) * 1.6
       field.style.transform = `rotate(${sway}deg)`
@@ -188,7 +188,7 @@ export function createLeap(ctx) {
         const yv = wrap(w.y - p * TRAVEL * w.s, -WRAP, WRAP)
         let x = (w.x * vw) / 100 + mx * w.z * 0.05
         const y = (yv * vh) / 100 - my * w.z * 0.04
-        const ghost = w.ghost ? 0.32 * ti : 0
+        const ghost = w.ghost ? 0.32 * ti * (1 - smoothRange(p, 0, 0.025)) : 0
         let o = w.op * Math.max(ghost, fin) * fout
         // the hollow giants may run off the edges; everything else stays on screen, and the
         // pills fade while they cross a caption (f: the field's perspective scale at this depth)
@@ -196,12 +196,9 @@ export function createLeap(ctx) {
           const f = PERSPECTIVE / (PERSPECTIVE - w.z)
           x = keepInside(x * f, w.w * f, vw) / f
           if (w.k === 'pill') o *= clearOf(x * f, y * f, w.w * f, w.h * f, capBox)
-          // phones: they fade out before they reach the bar's rows instead of running under them
-          if (compact) {
-            const cy = vh / 2 + y * f
-            const hh = (w.h * f) / 2
-            o *= smoothRange(cy - hh, bars.top, bars.top + 36) * (1 - smoothRange(cy + hh, bars.bottom - 36, bars.bottom))
-          }
+          if (w.ghost) o *= clearOf(x * f, y * f, w.w * f, w.h * f, [nameBox])
+          // they fade out before they reach the bar's rows instead of running under them
+          o *= clearOfBars(vh / 2 + y * f, (w.h * f) / 2, ctx.hud.bars)
         }
         let tr = `translate(-50%, -50%) translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, ${w.z}px)`
         if (w.rot) tr += ` rotate(${w.rot}deg)`

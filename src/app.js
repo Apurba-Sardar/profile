@@ -25,6 +25,9 @@ gsap.registerPlugin(ScrollTrigger)
 
 const titleCase = (s) => s.toLowerCase().replace(/(^|\s|-)\S/g, (m) => m.toUpperCase())
 
+// the sections that are plain pages (their text scrolls under the bar)
+const PAGE = new Set(['about', 'stack', 'services', 'contact'])
+
 export class App {
   constructor(content) {
     this.content = content
@@ -46,7 +49,8 @@ export class App {
     const layersRoot = document.getElementById('layers')
     this.toastNode = document.querySelector('.toast')
     this.curtain = el('div', { style: { position: 'fixed', inset: '0', background: '#000', zIndex: 90, opacity: 0, pointerEvents: 'none' } })
-    document.body.append(this.curtain)
+    // on the page sections text scrolls up under the bar: it fades into the page's black first
+    document.body.append(this.curtain, el('div.page-scrim', { 'aria-hidden': 'true' }))
 
     this.sound = new Sound(c.music)
     this.cursor = new Cursor()
@@ -107,6 +111,7 @@ export class App {
     this.bindResize()
     // fonts that arrive after the loader stopped waiting (slow networks) change text sizes
     document.fonts?.addEventListener?.('loadingdone', () => {
+      this.hud.measure()
       this.stage.measure()
       ScrollTrigger.refresh()
       this.measureChapters()
@@ -194,6 +199,7 @@ export class App {
     gsap.ticker.add((time) => this.lenis.raf(time * 1000))
     gsap.ticker.lagSmoothing(0)
 
+    this.hud.measure()
     this.stage.measure()
     for (const s of [this.work, this.about, this.services, this.contact]) s.setup()
     ScrollTrigger.refresh()
@@ -249,6 +255,7 @@ export class App {
         h = window.innerHeight
         // keep the visitor at the same moment of the film: chapter heights scale with the viewport
         this.renderer.resize()
+        this.hud.measure()
         this.stage.measure()
         this.clients.resize()
         ScrollTrigger.refresh()
@@ -260,6 +267,12 @@ export class App {
         }
       }, 160)
     })
+  }
+
+  setScrim(edge, on) {
+    if (this.scrim?.[edge] === on) return
+    this.scrim = { ...this.scrim, [edge]: on }
+    document.body.classList.toggle('scrim-' + edge, on)
   }
 
   /** The section under scroll position y and how far into it that is (as last measured). */
@@ -334,13 +347,16 @@ export class App {
       }
       this.sound.setScene(cur.mood)
     }
+    // text on the page sections fades into the black before it runs under either row of the bar
+    if (this.flowTops) {
+      const page = (y) => PAGE.has(this.anchor(y)?.node.id)
+      this.setScrim('top', page(scroll + this.hud.bars.top))
+      this.setScrim('bottom', page(scroll + this.hud.bars.bottom))
+    }
     const ls = this.leap.state
     this.hud.setAltitude(this.content.leap.startAltitude * (1 - Math.min(1, ls.p / 0.94)), ls.visible && ls.p < 0.999)
-    // the bar's name: on phones the hero's letters land on it one by one; elsewhere it steps aside
-    // while the big name is on screen
-    const dock = ls.visible ? this.leap.dock() : null
-    this.hud.setDock(dock)
-    this.hud.setHero(!dock && ls.visible && ls.p < 0.04)
+    // the bar's name: the hero's letters land on it one by one
+    this.hud.setDock(ls.visible ? this.leap.dock() : null)
     const v = this.lenis?.velocity || 0
     this.clients.tick(dt, v)
     this.sound.wind(v)

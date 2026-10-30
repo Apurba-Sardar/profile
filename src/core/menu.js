@@ -8,7 +8,10 @@ export class Menu {
     this.sound = sound
     this.onToggle = onToggle
     this.items = content.sections.map((s, i) =>
-      el('a.display', { href: '#' + s.id, 'data-i': i }, [el('span.dash', { text: '–' }), el('span', { text: s.label })]),
+      el('a.display', { href: '#' + s.id, 'data-i': i }, [
+        el('span.num.ui', { text: String(i + 1).padStart(2, '0'), 'aria-hidden': 'true' }),
+        el('span.label', { text: s.label }),
+      ]),
     )
     this.images = content.sections.map((s) => el('img', { src: s.preview, alt: '', loading: 'lazy', decoding: 'async' }))
     this.preview = el('div.menu-preview', { 'aria-hidden': 'true' }, this.images)
@@ -19,6 +22,7 @@ export class Menu {
     ])
     document.body.append(this.node)
     this.current = 0
+    this.items[0].classList.add('is-current')
     this.show(0)
 
     this.items.forEach((a, i) => {

@@ -12,6 +12,11 @@ import { clamp } from '../lib/util.js'
  *
  * A scene marked `chain` overlaps the previous one by one viewport, so the
  * hand-off between two scenes happens in place instead of sliding.
+ *
+ * What moves on a scene's layers fades out before it reaches the bar's rows
+ * (a CSS mask, held in place while the scene scrolls away); a scene that
+ * handles its edges itself sets `clear: false`, and full-bleed layers
+ * (backgrounds, scrims) are marked `.is-full`.
  */
 export class Stage {
   constructor() {
@@ -24,6 +29,7 @@ export class Stage {
   add(scene) {
     scene.state = { p: 0, top: 0, bottom: 0, y: 0, visible: false }
     scene.on = false
+    if (scene.clear !== false) for (const l of scene.layers) l.classList.toggle('is-clear', !l.classList.contains('is-full'))
     this.scenes.push(scene)
     this.byId[scene.id] = scene
     return scene
@@ -74,7 +80,12 @@ export class Stage {
         if (s.lastY !== ty) {
           s.lastY = ty
           const v = ty === 0 ? 'none' : `translate3d(0, ${ty}px, 0)`
-          for (const l of s.layers) if (!l.dataset.free) l.style.transform = v
+          const m = ty === 0 ? '' : `0 ${-ty}px`
+          for (const l of s.layers) {
+            if (l.dataset.free) continue
+            l.style.transform = v
+            if (l.classList.contains('is-clear')) l.style.webkitMaskPosition = l.style.maskPosition = m
+          }
         }
         s.update(p, st)
       }

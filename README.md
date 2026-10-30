@@ -18,26 +18,29 @@ scrubbed by scroll and layered with motion typography in GSAP.
 | **The Noise** | Top-down crowd around a burning figure; a hollow `NOISE` rises through the frame with the usual noise (*"it works on my machine"*, *"just add AI"*…). A shockwave clears it all. |
 | **Rise** | The letters of `RISE` fly in from every direction and invert the film beneath them. A figure of cold light stands up. |
 | **Index of work** | The film shrinks into a card while project tiles fly towards the camera through a 3D tunnel. |
-| **Selected work** | My two ventures, [Webnestle](https://webnestle.in) and [LootDost](https://lootdost.in), each with a giant marquee title, a spinning "record" (live WebGL) wrapped in rotating ring text, details and a link to the live site. Titles collapse into bars as they leave. |
+| **Selected work** | My two ventures, [Webnestle](https://webnestle.in) and [LootDost](https://lootdost.in). Each takes over from the one before in place: bars grow into its title (a marquee around the record on wide screens, the name fitted above it on tall ones), a spinning "record" (live WebGL) wrapped in rotating ring text spins in with the details and a link to the live site, and it all collapses back into bars before the next case arrives. |
 | **About / Stack / Services** | Word-by-word statement reveal, an outline marquee of the stack, and a services list that floods white on hover with a preview card trailing the cursor. |
 | **The Portal** | Storm clouds part above mountains, a slit of light opens into a door, lightning crawls out and a hooded developer walks through it towards the camera — then the closing headline. |
-| **Contact** | Availability, a huge gold email, a live clock and a way back to the top. |
+| **Contact** | Availability, a huge gold email, a live clock, a way back to the top and the name in outline as a signature. |
 
 The hero name rises letter by letter from behind a mask (a serif italic first name over a heavy grotesk surname),
 the surname swells like a wave on the variable font's width and weight axes (under the mouse, with the phone's tilt,
-or drifting on its own) and, as you scroll into the fall, the whole name bursts apart in 3D. On phones its letters
-take off one after another instead and fly up into the top bar, landing on the small name there letter by letter.
+or drifting on its own) and, as you scroll into the fall, its letters take off one after another and fly up into the
+top bar, landing on the small name there letter by letter.
+
+Nothing runs under the bar: what moves on the films fades out before it reaches the bar's rows, and the page
+sections fade into the black. The closing headline sits on a dimmed end card, the menu numbers its chapters, and
+every hand-over (between films, between cases) happens in place.
 
 Also included: smooth scrolling (Lenis), a `difference`-blend custom cursor, a full-screen chapter menu with previews,
 a soundtrack ("Let Him Cook" by XNIMXS, streamed once you turn the sound on; the surname, the beam and the meter
 in the bar pulse on its kick) layered with generative WebAudio sound (falling wind that follows your scroll speed,
 crowd murmur, impact boom that ducks the music, portal choir), a loader and `prefers-reduced-motion` support.
 
-On phones and tablets: portrait layouts (in Selected work each case takes over from the one before in place, its
-name fitted above the record, so nothing slides past the bars), ~44px touch areas on every control, safe-area insets
-for notches and the home indicator, floating words that stay on screen, step aside for captions and fade before
-the bars, services that light up as they cross the middle of the screen instead of on hover, and turning the phone
-keeps your place.
+On phones and tablets: portrait layouts (the name stacked, case titles fitted above the records), ~44px touch
+areas on every control, safe-area insets for notches and the home indicator, floating words that stay on screen and
+step aside for captions, services that light up as they cross the middle of the screen instead of on hover, and
+turning the phone keeps your place.
 
 ## Run it
 
@@ -104,7 +107,7 @@ tools/                  shader lab, tile designs and the media renderer (dev onl
 - **Why fixed layers instead of pinning?** Sticky or pinned containers create isolated stacking contexts, which
   breaks `mix-blend-mode: difference` against the WebGL canvas (the blue-over-gold captions, the inverted `RISE`).
   The stage keeps every scene layer at the root of the page and moves it exactly like `position: sticky` would.
-- **One canvas, many views.** The full-screen films, the shrinking card in the index and the four spinning records
+- **One canvas, many views.** The full-screen films, the shrinking card in the index and the spinning records
   in Selected work are all drawn by the same WebGL context using viewport + scissor rectangles that follow DOM
   elements.
 - **Adaptive quality.** Resolution drops automatically on slow GPUs and recovers when frames are fast.
