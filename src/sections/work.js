@@ -177,8 +177,13 @@ export function createWork(ctx) {
         if (!vis.has(c.glHole)) continue
         const op = Number(gsap.getProperty(c.disc, 'opacity'))
         if (c.art) {
-          // (with reduced motion it drifts slowly instead)
-          if (op >= 0.01) c.art.draw(ctx.reduced ? t * 0.25 : t, mouse[0], mouse[1])
+          // the artwork opens when its case arrives and plays from there (slowly with reduced motion)
+          if (op < 0.01) {
+            c.since = null
+            continue
+          }
+          c.since ??= t
+          c.art.draw((t - c.since) * (ctx.reduced ? 0.25 : 1), mouse[0], mouse[1])
           continue
         }
         const sc = Number(gsap.getProperty(c.disc, 'scale'))
