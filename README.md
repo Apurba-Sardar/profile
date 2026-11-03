@@ -1,6 +1,6 @@
 # Apurba Sardar — cinematic portfolio
 
-**Live:** https://apurba-sardar.github.io/profile/
+**Live:** https://apurbasardar.tech/
 
 ![Preview](public/media/og.jpg)
 
@@ -58,10 +58,15 @@ npm run preview   # serve the production build
   `claude/portfolio-motion-graphics-4hs1k6` and publishes `dist/` to the `gh-pages` branch, which Pages serves
   (Settings → Pages → Deploy from a branch → `gh-pages`, `/ (root)`), then waits until the live site serves the
   new build; the run fails if the site can't be reached. To redeploy by hand: Actions →
-  *Deploy to GitHub Pages* → *Run workflow*. The site lives at `https://apurba-sardar.github.io/<repository name>/`
-  (this repository is named `profile`). Paths are relative, so any sub-path works; the absolute links in
-  `index.html` (social cards, canonical) come from `VITE_SITE_URL`, which the workflow sets from the repository
-  name (`.env` holds the fallback).
+  *Deploy to GitHub Pages* → *Run workflow*. Paths are relative, so any address works; the absolute links in
+  `index.html` (social cards, canonical) come from `VITE_SITE_URL`, which the workflow sets from where the site is
+  served (`.env` holds the fallback).
+- **Custom domain**: `public/CNAME` holds it (`apurbasardar.tech`). The build copies it to `gh-pages`, which is
+  what sets the domain on Pages, and `https://apurba-sardar.github.io/profile/` then redirects there. At the
+  domain's DNS: four `A` records for `@` (`185.199.108.153`, `185.199.109.153`, `185.199.110.153`,
+  `185.199.111.153`), optionally four `AAAA` records (`2606:50c0:8000::153` to `2606:50c0:8003::153`), and a
+  `CNAME` for `www` to `apurba-sardar.github.io`. Once GitHub has issued the certificate, tick *Enforce HTTPS*
+  under Settings → Pages. Delete `public/CNAME` to go back to the `github.io` address.
 
 ## Make it yours
 
