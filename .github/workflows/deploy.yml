@@ -83,7 +83,18 @@ jobs:
           want="185.199.108.153 185.199.109.153 185.199.110.153 185.199.111.153 "
           [ "$a" = "$want" ] || echo "::warning::$SITE_HOST should have exactly the four A records $want(it has: ${a:-none})"
           case "$www" in *.github.io.*) ;; *) echo "::warning::www.$SITE_HOST should be a CNAME to ${GITHUB_REPOSITORY_OWNER,,}.github.io (it is: ${www:-none})" ;; esac
+          # the certificate (Let's Encrypt) is blocked by IPv6 records pointing elsewhere, or by CAA
+          # records that don't allow letsencrypt.org
+          aaaa=$(dig +short AAAA "$SITE_HOST" | sort | tr '\n' ' ')
+          caa=$(dig +short CAA "$SITE_HOST" | tr '\n' ';')
+          echo "AAAA $SITE_HOST: ${aaaa:-none}"
+          echo "CAA $SITE_HOST: ${caa:-none}"
+          six="2606:50c0:8000::153 2606:50c0:8001::153 2606:50c0:8002::153 2606:50c0:8003::153 "
+          [ -z "$aaaa" ] || [ "$aaaa" = "$six" ] || echo "::warning::$SITE_HOST has AAAA records that aren't GitHub's ($aaaa): delete them, or use exactly $six"
+          [ -z "$caa" ] || grep -q letsencrypt.org <<< "$caa" || echo "::warning::$SITE_HOST has CAA records that don't allow letsencrypt.org ($caa), so GitHub can't get its certificate"
           echo "http:  $(curl -sS -o /dev/null -m 20 -w '%{http_code} %{redirect_url}' "http://$SITE_HOST/" 2>&1)"
+          cert=$(openssl s_client -connect "$SITE_HOST:443" -servername "$SITE_HOST" </dev/null 2>/dev/null | openssl x509 -noout -subject -issuer -enddate 2>/dev/null | tr '\n' ' ')
+          echo "certificate served: ${cert:-none}"
           if https=$(curl -sS -o /dev/null -m 20 -w '%{http_code}' "https://$SITE_HOST/" 2>&1); then
             echo "https: $https"
           else
