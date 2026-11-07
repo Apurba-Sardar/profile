@@ -82,6 +82,8 @@ Everything you read on the site lives in **`src/content.js`**:
 - `portal.cta` — the closing headline (`\n` = line break).
 - `contact` — email, socials, availability line, and your city + IANA timezone for the live clock
   (`city: 'Kolkata'`, `timezone: 'Asia/Kolkata'`, `timezoneLabel: 'IST'`).
+- `seo` — the title and description search results and link previews show, the job title, employer and region
+  Google's structured data uses, and the social-card image (see [Search engines](#search-engines)).
 - `music` — the soundtrack (`src` in `public/`, `title`, `artist`, `volume`); `null` keeps only the generative sound.
   Keep the file small (`ffmpeg -i in.mp3 -map_metadata -1 -b:a 128k public/audio/track.mp3`).
 
@@ -95,11 +97,27 @@ Each cinematic chapter is a scroll "spacer" whose length is set by `vh` in its s
 (`src/scenes/*.js`, e.g. `vh: 640` = 6.4 screens of scroll for the leap). Inside, every effect is keyed to the
 chapter progress `p` (0 → 1), so retiming is a matter of changing those ranges.
 
+## Search engines
+
+`seo.js` (a Vite plugin) builds everything search engines read from `src/content.js` and the page's address
+(`VITE_SITE_URL`, from `public/CNAME`):
+
+- the `<title>`, meta description, canonical link, robots directives, Open Graph and Twitter cards;
+- structured data (JSON-LD): a `ProfilePage` about a `Person` (name, job title, employer, Kolkata, skills, the
+  social profiles as `sameAs`) and the ventures as `Organization`s he founded;
+- the site's words as plain HTML inside `<main>` (one `<h1>`, the work, about, services, stack and contact), so
+  crawlers that don't run JavaScript read the whole page; the app takes it out when it starts, and it is also
+  what visitors without JavaScript see;
+- `robots.txt` and `sitemap.xml`.
+
+Icons for search results and phones (`favicon-48.png`, `apple-touch-icon.png`, `icon-192/512.png`) and
+`site.webmanifest` are in `public/`.
+
 ## How it works
 
 ```
 src/
-  content.js            all copy
+  content.js            all copy (and what search engines read: seo.js)
   app.js                boot, loader, Lenis + GSAP ticker, render loop, navigation
   core/stage.js         fixed scene layers that behave like position: sticky
   core/hud.js menu.js cursor.js sound.js video.js

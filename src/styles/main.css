@@ -288,6 +288,72 @@ main {
 }
 
 /* ==========================================================================
+   The plain version: the site's words as simple HTML, for search engines and
+   for visitors without JavaScript (the app takes it out when it starts)
+   ========================================================================== */
+.static {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 12vh var(--gutter) 10vh;
+  font-size: 19px;
+  line-height: 1.45;
+  color: rgba(241, 238, 232, 0.86);
+}
+.static h1 {
+  font-family: var(--f-display);
+  font-stretch: 112%;
+  font-weight: 800;
+  font-size: clamp(42px, 8vw, 92px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--paper);
+  margin: 0.25em 0 0.4em;
+}
+.static h2 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 3.4em 0 1em;
+}
+.static h3,
+.static dt {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--paper);
+  margin: 1.3em 0 0.3em;
+}
+.static a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.static p + p {
+  margin-top: 0.8em;
+}
+.static ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 1em;
+}
+.static-kicker {
+  font-family: var(--f-display);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.static-note {
+  margin-top: 4em;
+  font-size: 15px;
+  color: var(--muted);
+}
+
+/* ==========================================================================
    Loader
    ========================================================================== */
 #loader {

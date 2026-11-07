@@ -23,7 +23,6 @@ import { el, prefersReducedMotion, formatAltitude, isTouch } from './lib/util.js
 
 gsap.registerPlugin(ScrollTrigger)
 
-const titleCase = (s) => s.toLowerCase().replace(/(^|\s|-)\S/g, (m) => m.toUpperCase())
 
 // the sections that are plain pages (their text scrolls under the bar)
 const PAGE = new Set(['about', 'stack', 'services', 'contact'])
@@ -40,7 +39,9 @@ export class App {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     window.scrollTo(0, 0)
 
-    document.title = `${titleCase(c.brand.name)} — ${titleCase(c.brand.role)}`
+    // the plain-HTML version of the page is for search engines and visitors without JavaScript;
+    // the film shows the same words its own way (the page's title comes from seo.js)
+    document.getElementById('static')?.remove()
     const ldBrand = document.querySelector('#loader .ld-brand')
     if (ldBrand) ldBrand.textContent = c.brand.name
 

@@ -13,6 +13,21 @@ export const content = {
     year: 2026,
   },
 
+  // How the site shows up in search results and link previews, and who you are for Google's
+  // knowledge of you (structured data). The page's address comes from public/CNAME.
+  seo: {
+    title: 'Apurba Sardar — Software Developer in Kolkata | Webnestle',
+    description:
+      'Apurba Sardar, software developer in Kolkata with 4+ years of experience. Founder of Webnestle (web agency) and LootDost; IT Manager at The Minds Journal.',
+    jobTitle: 'Software Developer',
+    worksFor: { name: 'The Minds Journal', url: 'https://themindsjournal.com' },
+    region: 'West Bengal',
+    country: 'IN',
+    // shown on social cards (1200 × 630)
+    image: 'media/og.jpg',
+    imageAlt: 'Apurba Sardar, software developer: a figure falling through a beam of golden light',
+  },
+
   // Labels used by the menu and the bottom-left section indicator.
   sections: [
     { id: 'leap', label: 'THE LEAP', preview: 'media/leap-beam.webp' },
@@ -78,6 +93,7 @@ export const content = {
     projects: [
       {
         name: 'WEBNESTLE',
+        title: 'Webnestle', // the name as it's written, for search engines
         client: 'MY VENTURE',
         category: 'WEB AGENCY',
         url: 'https://webnestle.in',
@@ -89,6 +105,7 @@ export const content = {
       },
       {
         name: 'LOOTDOST',
+        title: 'LootDost',
         client: 'MY VENTURE',
         category: 'DEAL-FINDING COMMUNITY',
         url: 'https://lootdost.in',
